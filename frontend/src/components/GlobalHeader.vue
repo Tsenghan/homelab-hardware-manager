@@ -1,0 +1,95 @@
+<template>
+  <header class="global-header">
+    <div class="header-left">
+      <h1 class="logo">
+        <el-icon><Monitor /></el-icon>
+        HomeLab 硬件资产
+      </h1>
+    </div>
+    <div class="header-center">
+      <GlobalSearch @select="handleSearchSelect" />
+    </div>
+    <div class="header-right">
+      <el-button circle title="导出数据" @click="exportData">
+        <el-icon><Download /></el-icon>
+      </el-button>
+    </div>
+  </header>
+</template>
+
+<script setup>
+import { Monitor, Download } from '@element-plus/icons-vue'
+import GlobalSearch from './GlobalSearch.vue'
+import { useAppStore } from '../stores/app'
+import { ElMessage } from 'element-plus'
+
+const emit = defineEmits(['search'])
+const store = useAppStore()
+
+const handleSearchSelect = (result) => {
+  emit('search', result)
+}
+
+const exportData = () => {
+  try {
+    store.exportData()
+    ElMessage.success('数据已导出')
+  } catch (e) {
+    ElMessage.error('导出失败')
+  }
+}
+</script>
+
+<style scoped>
+.global-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 20px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.logo .el-icon {
+  font-size: 24px;
+  color: var(--primary-color);
+}
+
+.header-center {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 32px;
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.header-right .el-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.header-right .el-button:hover {
+  background: var(--bg-gray-50);
+  border-color: var(--bg-gray-300);
+}
+</style>
