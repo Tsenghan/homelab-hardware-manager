@@ -28,6 +28,11 @@
             <el-option v-for="t in osTypeOptions" :key="t?.name || t?.id" :label="t?.name || '未知'" :value="t?.name || ''" />
           </el-select>
         </el-form-item>
+        <el-form-item label="父系统">
+          <el-select v-model="osForm.parent_os_id" placeholder="无（顶级系统）" clearable style="width: 100%">
+            <el-option v-for="h in hostOptions" :key="h.id" :label="h.name + ' (Host)'" :value="h.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="IP地址">
           <el-input v-model="osForm.ip_address" placeholder="如 192.168.1.1" />
         </el-form-item>
@@ -92,6 +97,11 @@ const osTypeOptions = computed(() => {
   return []
 })
 
+const hostOptions = computed(() => {
+  if (!addOsTargetComputerId.value) return []
+  return store.getHostOsInstances(addOsTargetComputerId.value)
+})
+
 const openDrawer = (type, data) => {
   drawerType.value = type
   drawerData.value = data
@@ -121,6 +131,7 @@ const openAddOsDialog = (computerId) => {
   osForm.value = {
     name: '',
     os_type: 'Linux',
+    parent_os_id: null,
     ip_address: '',
     port: null,
     mac_address: '',

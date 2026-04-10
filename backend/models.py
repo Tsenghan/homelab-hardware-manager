@@ -34,7 +34,7 @@ class Computer(db.Model):
             data['cpus'] = [cpu.to_dict() for cpu in self.cpus]
             data['rams'] = [ram.to_dict() for ram in self.rams]
             data['disks'] = [disk.to_dict() for disk in self.disks]
-            data['os_instances'] = [os.to_dict() for os in self.os_instances]
+            data['os_instances'] = [os.to_dict(include_details=True) for os in self.os_instances]
             data['cpuIds'] = [cpu.id for cpu in self.cpus]
             data['ramIds'] = [ram.id for ram in self.rams]
             data['diskIds'] = [disk.id for disk in self.disks]
@@ -161,6 +161,7 @@ class OsInstance(db.Model):
         }
         if include_details:
             data['services'] = [s.to_dict() for s in self.services]
+            data['children'] = [c.to_dict(include_details=True) for c in self.children]
         return data
 
 

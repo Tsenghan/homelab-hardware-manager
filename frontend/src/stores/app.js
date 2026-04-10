@@ -394,6 +394,7 @@ export function createAppStore() {
     const res = await api.createOsInstance(computerId, {
       name: form.name,
       os_type: form.os_type,
+      parent_os_id: form.parent_os_id || null,
       ip_address: form.ip_address,
       port: form.port,
       mac_address: form.mac_address,

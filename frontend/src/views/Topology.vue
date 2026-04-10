@@ -27,7 +27,9 @@
         </div>
 
         <div v-if="expandedIds.includes(`host-${computer.id}`)" class="tree-children">
-          <div v-for="os in getHostOsInstances(computer.id)" :key="os.id" style="margin-bottom:4px;">
+          <div v-for="os in getAllOsInstances(computer.id)" :key="os.id" style="margin-bottom:4px;">
+            <!-- Skip VMs here — they render inside their parent's expanded section -->
+            <template v-if="!os.parentOsId">
             <div
               class="tree-node os-node"
               :class="{ 'is-parent': !os.parentOsId, active: selectedId === os.id && selectedType === 'os_instance' }"
@@ -90,6 +92,7 @@
                 </div>
               </div>
             </div>
+            </template>
           </div>
         </div>
       </div>
@@ -125,8 +128,8 @@ const getOsIcon = (type) => {
   return osIconMap[type] || osIconMap['default']
 }
 
-const getHostOsInstances = (computerId) => {
-  return store.getHostOsInstances(computerId)
+const getAllOsInstances = (computerId) => {
+  return store.getComputerOsInstances(computerId)
 }
 
 const getOsServices = (osId) => {
@@ -179,7 +182,7 @@ const expandAll = () => {
   const ids = []
   store.state.computers.forEach(c => {
     ids.push(`host-${c.id}`)
-    store.getHostOsInstances(c.id).forEach(os => {
+    store.getComputerOsInstances(c.id).forEach(os => {
       // Expand OS instances that have services OR child VMs
       const hasServices = store.getOsServices(os.id).length > 0
       const hasChildVms = os.childVmIds && os.childVmIds.length

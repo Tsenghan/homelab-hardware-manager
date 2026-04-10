@@ -229,7 +229,7 @@ const ipGroups = computed(() => {
         occupied: !!record || ipServices.length > 0,
         entity: record?.entity || null,
         services: ipServices,
-        typeName: record ? '虚拟机' : (ipServices.length ? '服务' : '空闲')
+        typeName: record ? 'OS' : (ipServices.length ? '服务' : '空闲')
       })
     }
 
@@ -400,7 +400,6 @@ expandedGroups.value = store.state.ipGroups.map(g => g.id)
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  overflow: hidden;
 }
 
 .ip-group-header {
@@ -436,6 +435,7 @@ expandedGroups.value = store.state.ipGroups.map(g => g.id)
 .ip-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .ip-table th,
