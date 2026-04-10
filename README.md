@@ -8,7 +8,7 @@
 
 *专为个人及 HomeLab 场景设计的硬件与虚拟化资产管理系统*
 
-**English | [English Version](README_en.md)**
+**中文 | [English Version](README_en.md)**
 
 </div>
 
@@ -24,7 +24,6 @@
 | **硬件库** | 统一管理未分配的 CPU、内存、硬盘，支持批量录入与克隆 |
 | **OS 实例** | 支持 PVE/ESXi/Linux/Windows/LXC 等类型，可嵌套展示 VM/LXC |
 | **服务管理** | 管理端口、协议、服务地址，一键跳转访问 |
-| **存储池** | 支持 LVM/ZFS/ext4 等类型，关联物理磁盘与虚拟磁盘 |
 
 ### 可视化与交互
 
@@ -36,13 +35,12 @@
 | **IP 网络视图** | 按分组展示 IP 分配情况，直观管理地址段 |
 | **配置管理** | 自定义 OS 类型和服务协议的名称与配色方案 |
 
-### 数据模型（四层结构）
+### 数据模型（三层结构）
 
 ```
 L1 硬件层     → Computer / CPU / RAM / Disk
-L2 存储层     → StoragePool / VirtualDisk
-L3 系统层     → OsInstance（支持嵌套 VM/LXC）
-L4 应用层     → Service
+L2 系统层     → OsInstance（支持嵌套 VM/LXC）
+L3 应用层     → Service
 ```
 
 ---
@@ -53,7 +51,6 @@ L4 应用层     → Service
 |------|------|
 | 前端框架 | Vue 3 + Composition API + Vite |
 | UI 组件 | Element Plus |
-| 图表 | ECharts + vue-echarts |
 | 后端框架 | Python Flask + Flask-SQLAlchemy |
 | 数据库 | SQLite |
 | 部署 | Docker + Docker Compose |

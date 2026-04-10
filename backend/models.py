@@ -18,7 +18,6 @@ class Computer(db.Model):
     cpus = db.relationship('CPU', backref='computer', lazy=True, cascade='all, delete-orphan')
     rams = db.relationship('RAM', backref='computer', lazy=True, cascade='all, delete-orphan')
     disks = db.relationship('Disk', backref='computer', lazy=True, cascade='all, delete-orphan')
-    storage_pools = db.relationship('StoragePool', backref='computer', lazy=True, cascade='all, delete-orphan')
     os_instances = db.relationship('OsInstance', backref='computer', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self, include_details=False):
@@ -35,7 +34,6 @@ class Computer(db.Model):
             data['cpus'] = [cpu.to_dict() for cpu in self.cpus]
             data['rams'] = [ram.to_dict() for ram in self.rams]
             data['disks'] = [disk.to_dict() for disk in self.disks]
-            data['storage_pools'] = [sp.to_dict() for sp in self.storage_pools]
             data['os_instances'] = [os.to_dict() for os in self.os_instances]
             data['cpuIds'] = [cpu.id for cpu in self.cpus]
             data['ramIds'] = [ram.id for ram in self.rams]
@@ -130,56 +128,6 @@ class Disk(db.Model):
         }
 
 
-class StoragePool(db.Model):
-    __tablename__ = 'storage_pools'
-
-    id = db.Column(db.Integer, primary_key=True)
-    computer_id = db.Column(db.Integer, db.ForeignKey('computers.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    pool_type = db.Column(db.String(20))
-    total_capacity_gb = db.Column(db.Integer)
-    used_capacity_gb = db.Column(db.Integer, default=0)
-
-    virtual_disks = db.relationship('VirtualDisk', backref='storage_pool', lazy=True)
-
-    def to_dict(self, include_disks=False):
-        data = {
-            'id': self.id,
-            'computer_id': self.computer_id,
-            'name': self.name,
-            'pool_type': self.pool_type,
-            'total_capacity_gb': self.total_capacity_gb,
-            'used_capacity_gb': self.used_capacity_gb
-        }
-        if include_disks:
-            data['disks'] = [disk.to_dict() for disk in self.computer.disks]
-            data['virtual_disks'] = [vd.to_dict() for vd in self.virtual_disks]
-        return data
-
-
-class VirtualDisk(db.Model):
-    __tablename__ = 'virtual_disks'
-
-    id = db.Column(db.Integer, primary_key=True)
-    storage_pool_id = db.Column(db.Integer, db.ForeignKey('storage_pools.id'), nullable=False)
-    os_instance_id = db.Column(db.Integer, db.ForeignKey('os_instances.id'))
-    name = db.Column(db.String(100), nullable=False)
-    format = db.Column(db.String(20))
-    size_gb = db.Column(db.Integer)
-
-    os_instance = db.relationship('OsInstance', backref='virtual_disks')
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'storage_pool_id': self.storage_pool_id,
-            'os_instance_id': self.os_instance_id,
-            'name': self.name,
-            'format': self.format,
-            'size_gb': self.size_gb
-        }
-
-
 class OsInstance(db.Model):
     __tablename__ = 'os_instances'
 
@@ -212,7 +160,6 @@ class OsInstance(db.Model):
             'computer_name': self.computer.name if self.computer else None
         }
         if include_details:
-            data['virtual_disks'] = [vd.to_dict() for vd in self.virtual_disks]
             data['services'] = [s.to_dict() for s in self.services]
         return data
 

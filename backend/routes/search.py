@@ -81,7 +81,7 @@ def export_data():
 
 @search_bp.route('/import', methods=['POST'])
 def import_data():
-    from models import Computer, CPU, RAM, Disk, StoragePool, VirtualDisk, OsInstance, Service
+    from models import Computer, CPU, RAM, Disk, OsInstance, Service
     import json
 
     data = request.get_json()
@@ -90,8 +90,6 @@ def import_data():
     CPU.query.delete()
     RAM.query.delete()
     Disk.query.delete()
-    StoragePool.query.delete()
-    VirtualDisk.query.delete()
     OsInstance.query.delete()
     Service.query.delete()
     db.session.commit()
@@ -130,12 +128,6 @@ def import_data():
                         slot_info=disk_data.get('slot_info'), is_boot_disk=disk_data.get('is_boot_disk', False),
                         purchase_date=disk_data.get('purchase_date'), remarks=disk_data.get('remarks'))
             db.session.add(disk)
-
-        for sp_data in c_data.get('storage_pools', []):
-            sp = StoragePool(computer_id=c.id, name=sp_data['name'], pool_type=sp_data.get('pool_type'),
-                             total_capacity_gb=sp_data.get('total_capacity_gb'),
-                             used_capacity_gb=sp_data.get('used_capacity_gb', 0))
-            db.session.add(sp)
 
         for os_data in c_data.get('os_instances', []):
             os = OsInstance(computer_id=c.id, parent_os_id=os_data.get('parent_os_id'),

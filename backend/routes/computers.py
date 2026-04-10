@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Computer, CPU, RAM, Disk, StoragePool, OsInstance
+from models import db, Computer, CPU, RAM, Disk, OsInstance
 
 computers_bp = Blueprint('computers', __name__)
 
@@ -268,29 +268,6 @@ def delete_disk(id):
     db.session.delete(disk)
     db.session.commit()
     return '', 204
-
-
-@computers_bp.route('/computers/<int:computer_id>/storage-pools', methods=['GET'])
-def get_storage_pools(computer_id):
-    Computer.query.get_or_404(computer_id)
-    pools = StoragePool.query.filter_by(computer_id=computer_id).all()
-    return jsonify([p.to_dict(include_disks=True) for p in pools])
-
-
-@computers_bp.route('/computers/<int:computer_id>/storage-pools', methods=['POST'])
-def create_storage_pool(computer_id):
-    Computer.query.get_or_404(computer_id)
-    data = request.get_json()
-    pool = StoragePool(
-        computer_id=computer_id,
-        name=data.get('name'),
-        pool_type=data.get('pool_type'),
-        total_capacity_gb=data.get('total_capacity_gb'),
-        used_capacity_gb=data.get('used_capacity_gb', 0)
-    )
-    db.session.add(pool)
-    db.session.commit()
-    return jsonify(pool.to_dict()), 201
 
 
 @computers_bp.route('/computers/<int:computer_id>/os-instances', methods=['GET'])

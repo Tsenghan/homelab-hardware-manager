@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from main import create_app
-from models import db, Computer, CPU, RAM, Disk, StoragePool, OsInstance, Service, IpGroup, TypeConfig
+from models import db, Computer, CPU, RAM, Disk, OsInstance, Service, IpGroup, TypeConfig
 
 
 def init_database():
@@ -91,13 +91,6 @@ def load_example_data():
         Disk(computer_id=c1.id, brand='Intel', model='SSDPFKNQ960TZY', capacity_gb=960, interface='NVMe', file_system='ext4', purpose='数据盘', is_boot_disk=False, remarks='数据库'),
     ]
     db.session.add_all(disks)
-
-    # Storage Pools
-    pools = [
-        StoragePool(computer_id=c1.id, name='local-lvm', pool_type='LVM', total_capacity_gb=800, used_capacity_gb=400),
-        StoragePool(computer_id=c1.id, name='local-zfs', pool_type='ZFS', total_capacity_gb=1800, used_capacity_gb=900),
-    ]
-    db.session.add_all(pools)
 
     # OS Instances
     os1 = OsInstance(computer_id=c1.id, name='Proxmox VE 8.1', os_type='PVE', ip_address='192.168.1.100', port=8006, notes='主控节点')

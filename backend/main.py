@@ -20,7 +20,6 @@ def create_app():
     CORS(app)
 
     from routes.computers import computers_bp
-    from routes.storage import storage_bp
     from routes.os_instances import os_instances_bp
     from routes.services import services_bp
     from routes.search import search_bp
@@ -28,7 +27,6 @@ def create_app():
     from routes.type_configs import type_configs_bp
 
     app.register_blueprint(computers_bp, url_prefix='/api')
-    app.register_blueprint(storage_bp, url_prefix='/api')
     app.register_blueprint(os_instances_bp, url_prefix='/api')
     app.register_blueprint(services_bp, url_prefix='/api')
     app.register_blueprint(search_bp, url_prefix='/api')

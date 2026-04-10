@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, OsInstance, Service, VirtualDisk, StoragePool
+from models import db, OsInstance, Service
 
 os_instances_bp = Blueprint('os_instances', __name__)
 
@@ -8,28 +8,6 @@ os_instances_bp = Blueprint('os_instances', __name__)
 def get_os_instance(id):
     instance = OsInstance.query.get_or_404(id)
     return jsonify(instance.to_dict(include_details=True))
-
-
-@os_instances_bp.route('/os-instances/<int:id>/trace', methods=['GET'])
-def get_os_instance_trace(id):
-    instance = OsInstance.query.get_or_404(id)
-    trace = {
-        'os_instance': instance.to_dict(include_details=True),
-        'virtual_disks': [],
-        'storage_pools': []
-    }
-
-    for vd in instance.virtual_disks:
-        trace['virtual_disks'].append(vd.to_dict())
-        pool = vd.storage_pool
-        if pool:
-            trace['storage_pools'].append({
-                'pool': pool.to_dict(),
-                'physical_disks': [d.to_dict() for d in pool.computer.disks],
-                'computer': pool.computer.to_dict()
-            })
-
-    return jsonify(trace)
 
 
 @os_instances_bp.route('/os-instances/<int:os_instance_id>/services', methods=['GET'])

@@ -24,7 +24,6 @@
 | **Hardware Pool** | Manage unassigned CPUs, RAM modules, and disks; support batch entry and cloning |
 | **OS Instances** | Support PVE/ESXi/Linux/Windows/LXC, nested VM/LXC display |
 | **Services** | Manage ports, protocols, and service URLs with one-click access |
-| **Storage Pools** | Support LVM/ZFS/ext4, mapped to physical and virtual disks |
 
 ### Visualization & Interaction
 
@@ -36,13 +35,12 @@
 | **IP Network View** | IP allocation overview by group with address range management |
 | **Settings** | Customize OS type names and protocol color schemes |
 
-### Data Model (4-Layer Architecture)
+### Data Model (3-Layer Architecture)
 
 ```
 L1 Hardware       → Computer / CPU / RAM / Disk
-L2 Storage         → StoragePool / VirtualDisk
-L3 System         → OsInstance (supports nested VM/LXC)
-L4 Application    → Service
+L2 System         → OsInstance (supports nested VM/LXC)
+L3 Application    → Service
 ```
 
 ---
@@ -53,7 +51,6 @@ L4 Application    → Service
 |-------|------------|
 | Frontend Framework | Vue 3 + Composition API + Vite |
 | UI Components | Element Plus |
-| Charts | ECharts + vue-echarts |
 | Backend Framework | Python Flask + Flask-SQLAlchemy |
 | Database | SQLite |
 | Deployment | Docker + Docker Compose |

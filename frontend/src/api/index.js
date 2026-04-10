@@ -40,16 +40,11 @@ export const createDisk = (data) => api.post('/disks', data)
 export const updateDisk = (id, data) => api.put(`/disks/${id}`, data)
 export const deleteDisk = (id) => api.delete(`/disks/${id}`)
 
-// ==================== Storage Pool ====================
-export const getStoragePools = (computerId) => api.get(`/computers/${computerId}/storage-pools`)
-export const createStoragePool = (computerId, data) => api.post(`/computers/${computerId}/storage-pools`, data)
-
 // ==================== OS Instance ====================
 export const getOsInstances = (computerId) => api.get(`/computers/${computerId}/os-instances`)
 export const getOsInstance = (id) => api.get(`/os-instances/${id}`)
 export const createOsInstance = (computerId, data) => api.post(`/computers/${computerId}/os-instances`, data)
 export const deleteOsInstance = (id) => api.delete(`/os-instances/${id}`)
-export const getOsInstanceTrace = (id) => api.get(`/os-instances/${id}/trace`)
 
 // ==================== Service ====================
 export const getServices = (osInstanceId) => api.get(`/os-instances/${osInstanceId}/services`)
