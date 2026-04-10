@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.models import db, IpGroup
+from models import db, IpGroup
 
 ip_groups_bp = Blueprint('ip_groups', __name__)
 

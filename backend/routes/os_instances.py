@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.models import db, OsInstance, Service
+from models import db, OsInstance, Service
 
 os_instances_bp = Blueprint('os_instances', __name__)
 

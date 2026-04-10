@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.models import db, Computer, CPU, RAM, Disk, OsInstance
+from models import db, Computer, CPU, RAM, Disk, OsInstance
 
 computers_bp = Blueprint('computers', __name__)
 
