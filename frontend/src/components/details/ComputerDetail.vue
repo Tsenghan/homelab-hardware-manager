@@ -50,16 +50,6 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="存储池" name="storage">
-        <div class="hardware-section">
-          <div v-for="pool in storagePools" :key="pool.id" class="hardware-item" @click="$emit('select', 'storage_pool', pool)">
-            <div class="item-name">{{ pool.name }}</div>
-            <div class="item-meta">{{ pool.type }}</div>
-          </div>
-          <el-empty v-if="storagePools.length === 0" description="暂无存储池" :image-size="60" />
-        </div>
-      </el-tab-pane>
-
       <el-tab-pane label="虚拟机/系统" name="vms">
         <div class="hardware-section">
           <div v-for="vm in osInstances" :key="vm.id" class="hardware-item" @click="$emit('select', 'os_instance', vm)">
@@ -92,7 +82,6 @@ const activeTab = ref('info')
 const cpus = ref([])
 const rams = ref([])
 const disks = ref([])
-const storagePools = ref([])
 const osInstances = ref([])
 
 // 模拟数据
@@ -105,9 +94,6 @@ if (props.data?.id) {
   ]
   disks.value = [
     { id: 1, brand: 'Samsung', model: 'PM983', capacity_gb: 960, interface: 'NVMe', is_boot_disk: true }
-  ]
-  storagePools.value = [
-    { id: 1, name: 'local-lvm', type: 'LVM' }
   ]
   osInstances.value = [
     { id: 1, name: 'Proxmox VE 8', type: 'PVE', ip_address: '192.168.1.100', parent_os_id: null },

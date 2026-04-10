@@ -8,7 +8,6 @@
     <el-steps :active="currentStep" finish-status="success" align-center class="wizard-steps">
       <el-step title="基础信息" />
       <el-step title="硬件配置" />
-      <el-step title="存储规划" />
       <el-step title="宿主系统" />
     </el-steps>
 
@@ -65,28 +64,7 @@
         </el-form>
       </div>
 
-      <!-- Step 3: 存储规划 -->
-      <div v-if="currentStep === 2" class="step-form">
-        <el-form :model="formData.storage" label-width="100px">
-          <div v-for="(pool, index) in formData.storage.pools" :key="index" class="pool-item">
-            <el-divider v-if="index > 0">存储池 {{ index + 1 }}</el-divider>
-            <el-form-item label="池名称">
-              <el-input v-model="pool.name" placeholder="如 local-lvm" />
-            </el-form-item>
-            <el-form-item label="类型">
-              <el-select v-model="pool.type" placeholder="选择类型">
-                <el-option label="ZFS" value="ZFS" />
-                <el-option label="LVM" value="LVM" />
-                <el-option label="ext4" value="ext4" />
-                <el-option label="Btrfs" value="Btrfs" />
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-button size="small" @click="addPool">+ 添加存储池</el-button>
-        </el-form>
-      </div>
-
-      <!-- Step 4: 宿主系统 -->
+      <!-- Step 3: 宿主系统 -->
       <div v-if="currentStep === 3" class="step-form">
         <el-form :model="formData.os" label-width="100px">
           <el-form-item label="系统名称">
@@ -116,8 +94,8 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
-        <el-button v-if="currentStep < 3" type="primary" @click="nextStep">下一步</el-button>
-        <el-button v-if="currentStep === 3" type="primary" @click="submitForm">完成</el-button>
+        <el-button v-if="currentStep < 2" type="primary" @click="nextStep">下一步</el-button>
+        <el-button v-if="currentStep === 2" type="primary" @click="submitForm">完成</el-button>
       </div>
     </template>
   </el-dialog>
@@ -144,9 +122,6 @@ const formData = reactive({
     ramType: 'DDR4',
     disks: [{ model: '', capacity: 500 }]
   },
-  storage: {
-    pools: [{ name: 'local-lvm', type: 'LVM' }]
-  },
   os: { name: '', type: 'PVE', ipAddress: '', macAddress: '', notes: '' }
 })
 
@@ -154,12 +129,8 @@ const addDisk = () => {
   formData.hardware.disks.push({ model: '', capacity: 500 })
 }
 
-const addPool = () => {
-  formData.storage.pools.push({ name: '', type: 'ZFS' })
-}
-
 const nextStep = () => {
-  if (currentStep.value < 3) currentStep.value++
+  if (currentStep.value < 2) currentStep.value++
 }
 
 const prevStep = () => {
@@ -191,8 +162,7 @@ const handleClose = () => {
   padding: 20px 0;
 }
 
-.disk-item,
-.pool-item {
+.disk-item {
   margin-bottom: 16px;
   padding: 16px;
   background: #f5f7fa;

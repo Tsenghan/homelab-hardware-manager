@@ -32,32 +32,6 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="存储溯源" name="storage">
-        <div class="section-title">
-          <el-icon><Guide /></el-icon> 虚拟磁盘 → 存储池 → 物理硬盘
-        </div>
-        <div v-for="vdisk in virtualDisks" :key="vdisk.id" class="storage-trace">
-          <div class="trace-step vm">
-            <el-icon><Box /></el-icon>
-            <span>{{ vdisk.name }}</span>
-            <span class="size">{{ vdisk.size_gb }}GB</span>
-          </div>
-          <div class="trace-line"></div>
-          <div class="trace-step pool">
-            <el-icon><Folder /></el-icon>
-            <span>{{ vdisk.storage_pool?.name }}</span>
-            <span class="type">{{ vdisk.storage_pool?.type }}</span>
-          </div>
-          <div class="trace-line"></div>
-          <div class="trace-step disk">
-            <el-icon><Cpu /></el-icon>
-            <span>{{ vdisk.storage_pool?.disks?.[0]?.brand }} {{ vdisk.storage_pool?.disks?.[0]?.model }}</span>
-            <span class="size">{{ vdisk.storage_pool?.disks?.[0]?.capacity_gb }}GB</span>
-          </div>
-        </div>
-        <el-empty v-if="virtualDisks.length === 0" description="暂无虚拟磁盘" :image-size="60" />
-      </el-tab-pane>
-
       <el-tab-pane label="运行服务" name="services">
         <div class="service-list">
           <div v-for="service in services" :key="service.id" class="service-item">
@@ -94,27 +68,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Guide, Box, Folder, Cpu, Connection } from '@element-plus/icons-vue'
+import { Folder, Cpu, Connection } from '@element-plus/icons-vue'
 
 const props = defineProps({
   data: Object
 })
 
 const activeTab = ref('info')
-
-// 模拟数据
-const virtualDisks = ref([
-  {
-    id: 1,
-    name: 'vm-101-disk-0.qcow2',
-    size_gb: 100,
-    storage_pool: {
-      name: 'local-lvm',
-      type: 'LVM',
-      disks: [{ brand: 'Samsung', model: 'PM983', capacity_gb: 960 }]
-    }
-  }
-])
 
 const services = ref([
   { id: 1, name: 'HomeAssistant', protocol: 'https', url: 'homeassistant.local', port: 8123 },
@@ -184,59 +144,6 @@ const childVms = ref([
   font-weight: 600;
   color: #303133;
   margin-bottom: 16px;
-}
-
-.storage-trace {
-  background: #f5f7fa;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.trace-step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  border-left: 3px solid;
-}
-
-.trace-step.vm {
-  border-color: #409EFF;
-}
-
-.trace-step.pool {
-  border-color: #67C23A;
-}
-
-.trace-step.disk {
-  border-color: #E6A23C;
-}
-
-.trace-step .el-icon {
-  font-size: 20px;
-}
-
-.trace-step span {
-  flex: 1;
-}
-
-.trace-step .size,
-.trace-step .type {
-  font-size: 12px;
-  color: #909399;
-  background: #f5f7fa;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.trace-line {
-  width: 2px;
-  height: 16px;
-  background: #dcdfe6;
-  margin-left: 24px;
 }
 
 .service-list,
