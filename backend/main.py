@@ -1,7 +1,7 @@
 import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from models import db
+from backend.models import db
 
 
 def create_app():
@@ -54,7 +54,7 @@ def create_app():
 
 
 def seed_data_if_empty():
-    from models import Computer, CPU, RAM, Disk, OsInstance, Service, IpGroup, TypeConfig
+    from backend.models import Computer, CPU, RAM, Disk, OsInstance, Service, IpGroup, TypeConfig
 
     if IpGroup.query.first() is None:
         groups = [

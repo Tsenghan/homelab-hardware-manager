@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import Computer, OsInstance, Service
+from backend.models import Computer, OsInstance, Service
 
 search_bp = Blueprint('search', __name__)
 
@@ -66,7 +66,7 @@ def search():
 
 @search_bp.route('/export', methods=['GET'])
 def export_data():
-    from models import Computer
+    from backend.models import Computer
     import json
 
     computers = Computer.query.all()
@@ -81,7 +81,7 @@ def export_data():
 
 @search_bp.route('/import', methods=['POST'])
 def import_data():
-    from models import Computer, CPU, RAM, Disk, OsInstance, Service
+    from backend.models import Computer, CPU, RAM, Disk, OsInstance, Service
     import json
 
     data = request.get_json()

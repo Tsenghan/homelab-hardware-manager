@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, TypeConfig
+from backend.models import db, TypeConfig
 
 type_configs_bp = Blueprint('type_configs', __name__)
 
