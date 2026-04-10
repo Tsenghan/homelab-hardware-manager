@@ -154,7 +154,6 @@ homelab-hardware-manager/
 │   │   ├── computers.py
 │   │   ├── os_instances.py
 │   │   ├── services.py
-│   │   ├── storage.py
 │   │   ├── search.py
 │   │   ├── ip_groups.py
 │   │   └── type_configs.py
@@ -254,3 +253,11 @@ homelab-hardware-manager/
 如果这个项目对你有帮助，请帮我点一个 Star！你的支持是我持续维护的动力。
 
 [![Star](https://img.shields.io/github/stars/Tsenghan/homelab-hardware-manager?style=social&logo=github)](https://github.com/Tsenghan/homelab-hardware-manager)
+
+---
+
+## 关于 AI
+
+本项目从零到一完全由 AI 构建，代码、架构设计与文档均借助 AI 辅助完成。
+
+感谢 **Claude Code (Anthropic)** 和 **MiniMax M2.7** 的协助。

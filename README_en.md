@@ -154,7 +154,6 @@ homelab-hardware-manager/
 │   │   ├── computers.py
 │   │   ├── os_instances.py
 │   │   ├── services.py
-│   │   ├── storage.py
 │   │   ├── search.py
 │   │   ├── ip_groups.py
 │   │   └── type_configs.py
@@ -254,3 +253,11 @@ This project is open source under the [MIT License](LICENSE).
 If this project is helpful to you, please give it a Star! Your support drives my motivation to keep improving.
 
 [![Star](https://img.shields.io/github/stars/Tsenghan/homelab-hardware-manager?style=social&logo=github)](https://github.com/Tsenghan/homelab-hardware-manager)
+
+---
+
+## About AI
+
+This project was built entirely from scratch with AI assistance — code, architecture, and documentation all created with the help of AI.
+
+Special thanks to **Claude Code (Anthropic)** and **MiniMax M2.7**.
