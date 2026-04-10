@@ -54,7 +54,7 @@ def create_app():
 
 
 def seed_data_if_empty():
-    from models import Computer, CPU, RAM, Disk, StoragePool, OsInstance, Service, IpGroup, TypeConfig
+    from models import Computer, CPU, RAM, Disk, OsInstance, Service, IpGroup, TypeConfig
 
     if IpGroup.query.first() is None:
         groups = [
@@ -99,10 +99,6 @@ def seed_data_if_empty():
         disk1 = Disk(computer_id=c1.id, brand='Samsung', model='PM983', capacity_gb=960, interface='NVMe', file_system='ext4', purpose='系统盘', is_boot_disk=True, remarks='PVE系统')
         disk2 = Disk(computer_id=c1.id, brand='Intel', model='SSDPFKNQ960TZY', capacity_gb=960, interface='NVMe', file_system='ext4', purpose='数据盘', is_boot_disk=False, remarks='数据库')
         db.session.add_all([disk1, disk2])
-
-        sp1 = StoragePool(computer_id=c1.id, name='local-lvm', pool_type='LVM', total_capacity_gb=800, used_capacity_gb=400)
-        sp2 = StoragePool(computer_id=c1.id, name='local-zfs', pool_type='ZFS', total_capacity_gb=1800, used_capacity_gb=900)
-        db.session.add_all([sp1, sp2])
 
         os1 = OsInstance(computer_id=c1.id, name='Proxmox VE 8.1', os_type='PVE', ip_address='192.168.1.100', port=8006, notes='主控节点')
         db.session.add(os1)
