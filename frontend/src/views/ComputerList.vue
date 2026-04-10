@@ -240,124 +240,193 @@ const resetForm = () => {
   padding: 0;
 }
 
+/* --- 顶部与搜索区 --- */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .filter-bar {
   margin-bottom: 16px;
+  display: flex;
 }
 
+/* --- 网格布局优化 --- */
 .computer-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  /* ✨ 核心调整：稍微缩小卡片基础宽度，避免过度拉伸导致的空洞感 */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
+/* --- 卡片整体质感 --- */
 .computer-card {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  background: var(--bg-white, #ffffff);
+  border: 1px solid var(--border-light, #e4e7ed);
+  border-radius: var(--radius-lg, 12px); /* 加大一点圆角，更现代 */
+  padding: 20px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
 }
 
 .computer-card:hover {
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--primary-color, #409eff);
+  transform: translateY(-2px); /* ✨ 增加微微上浮的动效 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06); /* 悬浮时阴影加深 */
 }
 
+/* --- 卡片头部 --- */
 .card-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-light);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light, #ebeef5);
 }
 
 .computer-icon {
-  width: 44px;
-  height: 44px;
-  background: var(--primary-color);
-  border-radius: var(--radius-lg);
+  width: 48px;
+  height: 48px;
+  /* ✨ 使用渐变色提升硬件质感 */
+  background: linear-gradient(135deg, var(--primary-color, #409eff), #2563eb);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 20px;
+  font-size: 24px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); /* 给图标发一点点光 */
 }
 
 .computer-info {
   flex: 1;
+  overflow: hidden; /* 防止长名字溢出 */
 }
 
 .computer-name {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .computer-ip {
-  font-size: 14px;
-  color: var(--primary-color);
-  font-family: var(--font-mono);
-  margin-top: 4px;
+  /* ✨ 与服务列表统一的 IP 极客风格 */
+  font-size: 0.75rem;
+  color: #475569;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  display: inline-block;
+  margin-top: 6px;
 }
 
+/* --- 卡片数据区 --- */
 .card-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  flex: 1; /* 撑满剩余空间，让 footer 到底部对齐 */
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
+  align-items: baseline; /* ✨ 让不同大小的文字底部对齐 */
   font-size: 0.8125rem;
+  /* ✨ 终极绝招：添加引导虚线，解决左右分离造成的视觉断层 */
+  background-image: linear-gradient(to right, #cbd5e1 33%, rgba(255,255,255,0) 0%);
+  background-position: bottom;
+  background-size: 3px 1px;
+  background-repeat: repeat-x;
+  padding-bottom: 2px;
 }
 
 .info-row .label {
-  color: var(--text-muted);
+  color: #64748b;
+  background: white; /* 遮挡虚线 */
+  padding-right: 8px;
 }
 
 .info-row .value {
-  color: var(--text-primary);
+  color: #1e293b;
   font-weight: 500;
+  background: white; /* 遮挡虚线 */
+  padding-left: 8px;
 }
 
+/* --- 卡片底部操作区 --- */
 .card-footer {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-light);
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid transparent; /* 留出空间，但不显示生硬的线 */
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 4px;
 }
 
+/* 调整按钮大小和样式，使其更精致 */
+.card-footer .el-button {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.card-footer .el-button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.card-footer .el-button--danger:hover {
+  background: #fef2f2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+/* --- 弹窗内的复选框网格美化 --- */
 .checkbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 .checkbox-item {
-  padding: 8px 12px;
-  background: var(--bg-gray-50);
-  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s;
-  border: 1px solid transparent;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
 }
 
 .checkbox-item:hover {
-  border-color: var(--primary-color);
+  border-color: #94a3b8;
+  background: #f1f5f9;
 }
 
 .checkbox-item.selected {
-  border-color: var(--primary-color);
-  background: rgba(37, 99, 235, 0.05);
+  border-color: var(--primary-color, #409eff);
+  background: rgba(64, 158, 255, 0.05);
+  box-shadow: 0 0 0 1px var(--primary-color, #409eff) inset;
 }
 
 .checkbox-item.assigned {
   opacity: 0.5;
   cursor: not-allowed;
+  filter: grayscale(1);
 }
 </style>

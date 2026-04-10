@@ -36,8 +36,8 @@
         </thead>
         <tbody>
           <tr v-for="cpu in store.state.allHardware.cpus" :key="cpu.id">
-            <td>{{ cpu.model }}</td>
-            <td>{{ cpu.cores }} 核</td>
+            <td><span class="tech-data">{{ cpu.cores }} 核</span></td>
+            <td><span class="tech-data">{{ cpu.clockSpeed }} GHz</span></td>
             <td>{{ cpu.clockSpeed }} GHz</td>
             <td>{{ cpu.purchaseDate || '-' }}</td>
             <td>{{ cpu.remarks || '-' }}</td>
@@ -75,8 +75,8 @@
           <tr v-for="ram in store.state.allHardware.rams" :key="ram.id">
             <td>{{ ram.brand }}</td>
             <td>{{ ram.model }}</td>
-            <td>{{ ram.capacity }} GB</td>
-            <td>{{ ram.type }}</td>
+            <td><span class="tech-data">{{ ram.capacity }} GB</span></td>
+            <td><span class="tech-data">{{ ram.type }}</span></td>
             <td>
               <el-tag v-if="ram.computerId" size="small" type="success">
                 {{ getComputerName(ram.computerId) }}
@@ -114,7 +114,7 @@
           <tr v-for="disk in store.state.allHardware.disks" :key="disk.id">
             <td>{{ disk.brand }}</td>
             <td>{{ disk.model }}</td>
-            <td>{{ disk.capacity }} GB</td>
+            <td><span class="tech-data">{{ disk.capacity }} GB</span></td>
             <td>{{ disk.interface }}</td>
             <td>{{ disk.fileSystem || '-' }}</td>
             <td>{{ disk.purpose || '-' }}</td>
@@ -251,13 +251,24 @@ const deleteHardware = async (type, id) => {
   padding: 0;
 }
 
-.hardware-section {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+/* --- 顶部操作区对齐 --- */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
+/* --- 卡片容器质感 --- */
+.hardware-section {
+  background: var(--bg-white, #ffffff);
+  border: 1px solid var(--border-light, #e4e7ed);
+  border-radius: var(--radius-lg, 8px);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03); /* ✨ 统一的呼吸感阴影 */
+}
+
+/* --- 原生表格美化 --- */
 .hardware-table {
   width: 100%;
   border-collapse: collapse;
@@ -265,25 +276,50 @@ const deleteHardware = async (type, id) => {
 
 .hardware-table th,
 .hardware-table td {
-  padding: 10px 14px;
+  padding: 12px 16px; /* 增加一点留白，让表格不那么拥挤 */
   text-align: left;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light, #ebeef5);
+  font-size: 0.8125rem;
+  color: #334155; /* 加深一点基础字体颜色，提高对比度 */
 }
 
 .hardware-table th {
-  background: var(--bg-gray-50);
+  background: #f8fafc; /* ✨ 表头使用极浅的蓝灰色，区分数据层级 */
   font-weight: 500;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  color: #64748b;
+  white-space: nowrap; /* 防止表头文字换行 */
 }
 
-.hardware-table tr:hover td {
-  background: var(--bg-gray-50);
+/* --- 统一斑马纹 (深浅行) 风格 --- */
+.hardware-table tbody tr:nth-child(even) td {
+  background-color: #fafafa; /* ✨ 极浅的灰色，和 el-table 的 stripe 颜色保持一致 */
 }
 
+/* --- 统一鼠标悬停反馈 --- */
+.hardware-table tbody tr:hover td {
+  /* 悬停时的颜色需要比斑马纹稍微深一点点，才能看出交互效果 */
+  background-color: #f1f5f9; 
+}
 .hardware-table tr:last-child td {
   border-bottom: none;
+}
+
+/* --- 硬件参数极客风强调 --- */
+.tech-data {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-weight: 600;
+  color: #0f172a; /* 几乎纯黑，让核心数据跳出来 */
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* --- 修复可能的标签裁切 --- */
+:deep(.el-tag) {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 </style>

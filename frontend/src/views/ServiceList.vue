@@ -16,45 +16,47 @@
 
     <div class="service-table">
       <el-table :data="filteredServices" stripe style="width: 100%">
+        <template #empty>
+           <el-empty description="暂无服务" />
+        </template>
         <el-table-column label="服务名" prop="name" min-width="150" />
-        <el-table-column label="协议" width="80">
+        <el-table-column label="协议" width="100" align="center">
           <template #default="{ row }">
             <el-tag size="small" :type="row.protocol === 'https' ? 'success' : 'info'">
               {{ row.protocol?.toUpperCase() }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="地址" min-width="200">
+        <el-table-column label="地址" min-width="180">
           <template #default="{ row }">
             <span class="mono">{{ row.ip_address }}:{{ row.port }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="宿主系统" min-width="150">
+        <el-table-column label="宿主系统" min-width="200">
           <template #default="{ row }">
             {{ getOsInstanceName(row.osInstanceId) }}
           </template>
         </el-table-column>
         <el-table-column label="描述" min-width="150">
           <template #default="{ row }">
-            {{ row.description || '-' }}
+            {{ row.description || ' ' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="primary" text @click="openServiceUrl(row)">
-              <el-icon><Link /></el-icon> 打开
-            </el-button>
-            <el-button size="small" type="primary" text @click="editService(row)">
-              <el-icon><Edit /></el-icon> 编辑
-            </el-button>
-            <el-button size="small" type="danger" text @click="confirmDelete(row)">
-              <el-icon><Delete /></el-icon> 删除
-            </el-button>
+        <el-table-column label="操作" width="180" fixed="right"> <template #default="{ row }">
+            <div class="action-btns">
+              <el-button size="small" type="primary" text @click="openServiceUrl(row)">
+                <el-icon><Link /></el-icon> 打开
+              </el-button>
+              <el-button size="small" text @click="editService(row)">
+                <el-icon><Edit /></el-icon> 编辑
+              </el-button>
+              <el-button size="small" text @click="confirmDelete(row)">
+                <el-icon><Delete /></el-icon> 删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-
-      <el-empty v-if="filteredServices.length === 0" description="暂无服务" />
     </div>
 
     <!-- Service Dialog -->
@@ -194,21 +196,86 @@ const confirmDelete = (s) => {
   padding: 0;
 }
 
+/* 确保标题和按钮对齐，虽然你可能在全局写了，但局部再稳固一下 */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .filter-bar {
   display: flex;
   margin-bottom: 16px;
 }
 
+/* --- 表格容器质感提升 --- */
 .service-table {
   background: var(--bg-white);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color); /* 保留极细边框 */
   border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04); /* ✨ 新增：增加非常柔和的阴影，产生呼吸感 */
   overflow: hidden;
 }
 
+/* --- Element Plus 表格深度美化 --- */
+:deep(.el-table) {
+  --el-table-border-color: var(--border-light, #ebeef5); /* 统一内边框颜色 */
+  --el-table-header-bg-color: #f8fafc; /* ✨ 新增：给表头加一个极浅的灰蓝色背景，区分层级 */
+}
+
+/* 去掉 el-table 底部默认的那条丑陋的白线/灰线伪元素 */
+:deep(.el-table::before) {
+  display: none;
+}
+
+/* 让斑马纹的颜色更柔和一点 (可选) */
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
+  background-color: #fafafa;
+}
+
+/* --- 数据展示排版 --- */
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: 0.8125rem;
-  color: var(--primary-color);
+  /* ✨ 优化：不再用刺眼的亮蓝，改用专业代码块风格 */
+  color: #334155; 
+  background-color: #f1f5f9; 
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+.action-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* ✨ 核心：这个值越小，按钮靠得越近，建议用 2px 或 4px */
+}
+
+/* ✨ 必须加上这行：强制干掉 Element Plus 按钮默认的左边距 */
+.action-btns .el-button + .el-button {
+  margin-left: 0 !important; 
+}
+
+/* (可选) 如果你觉得按钮本身的内边距也太宽，可以加上下面这行把按钮捏瘦一点 */
+.action-btns .el-button {
+  padding: 4px 6px; 
+}
+/* --- 修复操作列 Primary 文本按钮颜色 --- */
+.action-btns .el-button--primary.is-text {
+  color: var(--primary-bg, #f8fafc) !important; /* 强制文字为主色（蓝色） */
+  background-color: var(--primary-color, #409EFF) !important;        /* 强制背景透明 */
+}
+
+/* 修复悬停时的对比度问题 */
+.action-btns .el-button--primary.is-text:hover {
+  /* 悬停时给一个极浅的蓝色背景，保持高对比度 */
+  background-color: var(--el-color-primary-light-9, #ecf5ff) !important; 
+  color: var(--primary-color, #409EFF) !important;
+}
+
+/* 顺便修复一下普通编辑/删除按钮的悬停底色，让它们统一 */
+.action-btns .el-button.is-text:not(.el-button--primary):hover {
+  background-color: var(--bg-gray-50, #f3f4f6) !important;
+  color: var(--text-primary, #303133) !important;
 }
 </style>

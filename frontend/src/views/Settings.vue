@@ -1,7 +1,7 @@
 <template>
   <div class="settings-view">
     <h2 class="page-title">配置管理</h2>
-
+    <div class="settings-container">
     <!-- OS类型配置 -->
     <div class="settings-section">
       <div class="section-header">
@@ -52,6 +52,7 @@
           </template>
         </el-table-column>
       </el-table>
+    </div>
     </div>
 
     <!-- Add OS Type Dialog -->
@@ -159,27 +160,92 @@ const confirmDeleteType = (item) => {
 
 <style scoped>
 .settings-view {
-  max-width: 800px;
+  padding: 0;
 }
 
-.settings-section {
+.view-header {
   margin-bottom: 24px;
-  background: var(--bg-white);
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
 }
 
+/* --- ✨ 核心重构：双列响应式网格 --- */
+/* 屏幕宽时左右并排，屏幕窄时自动上下堆叠 */
+.settings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  align-items: start; /* 防止左右两个卡片因为内容不一样高而被强制拉伸 */
+}
+
+/* --- 卡片质感 --- */
+.settings-section {
+  background: var(--bg-white, #ffffff);
+  padding: 20px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-light, #e4e7ed);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03); /* 统一呼吸感阴影 */
+  transition: box-shadow 0.3s ease;
+}
+
+.settings-section:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* --- 卡片头部与标题 --- */
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light, #ebeef5); /* 增加一条浅色分隔线 */
 }
 
 .settings-section-title {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #303133;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+}
+
+/* ✨ 给标题加个左侧主色小点缀，呼应之前拓扑图的设计 */
+.settings-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: var(--primary-color, #409eff);
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+/* --- ✨ 统一 Element Plus 表格美化 --- */
+:deep(.el-table) {
+  --el-table-border-color: var(--border-light, #ebeef5);
+  --el-table-header-bg-color: #f8fafc; /* 浅灰蓝表头 */
+  --el-table-header-text-color: #64748b;
+  border-radius: 6px; /* 让表格也有一点圆角 */
+  overflow: hidden;
+}
+
+:deep(.el-table::before) {
+  display: none; /* 去掉表格底部默认的白线 */
+}
+
+:deep(.el-table th.el-table__cell) {
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 统一斑马纹颜色 */
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
+  background-color: #fafafa;
+}
+
+/* 修改颜色选择器的对齐问题 */
+:deep(.el-color-picker) {
+  vertical-align: middle;
 }
 </style>

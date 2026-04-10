@@ -44,14 +44,16 @@
             <thead>
               <tr>
                 <th style="width:140px">IP地址</th>
-                <th>主机/名称</th>
+                <th style="width:250px">主机/名称</th>
                 <th style="width:100px">类型</th>
                 <th>服务 (端口)</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="ip in group.ips" :key="ip.ip" :class="{ idle: !ip.occupied }">
-                <td class="ip-cell" :class="ip.occupied ? 'occupied' : 'idle'">{{ ip.ip }}</td>
+                <td>
+                    <span class="ip-cell" :class="ip.occupied ? 'occupied' : 'idle'">{{ ip.ip }}</span>
+                </td>
                 <td>
                   <span v-if="ip.hostName" class="host-link" @click="navigateToIp(ip)">{{ ip.hostName }}</span>
                   <span v-else style="color:#dcdfe6">—</span>
@@ -385,139 +387,185 @@ expandedGroups.value = store.state.ipGroups.map(g => g.id)
   padding: 0;
 }
 
-.filter-bar {
+.view-header {
   display: flex;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.ip-groups {
+.header-actions {
   display: flex;
-  flex-direction: column;
   gap: 12px;
 }
 
-.ip-group {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+.filter-bar {
+  display: flex;
+  margin-bottom: 16px;
+  align-items: center;
 }
 
+/* --- 卡片与间距排版 --- */
+.ip-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 稍微拉开一点分组之间的距离，增加呼吸感 */
+}
+
+.ip-group {
+  background: var(--bg-white, #ffffff);
+  border: 1px solid var(--border-light, #e4e7ed);
+  border-radius: var(--radius-lg, 8px);
+  overflow: hidden; /* ✨ 核心：确保内容不会超出圆角 */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03); /* ✨ 统一的柔和阴影 */
+  transition: box-shadow 0.3s ease;
+}
+
+.ip-group:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* 鼠标移入时阴影稍微加深 */
+}
+
+/* --- 分组标题栏 (颜值核心重构) --- */
 .ip-group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: var(--primary-color);
-  color: white;
+  background: #f8fafc; /* ✨ 改用极浅的蓝灰色，不再刺眼 */
+  color: #334155;      /* ✨ 深色文字，高对比度 */
+  border-left: 4px solid var(--primary-color, #409eff); /* ✨ 用左侧的一抹主色来强调层级 */
+  border-bottom: 1px solid var(--border-light, #ebeef5);
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: background-color 0.2s;
 }
 
 .ip-group-header:hover {
-  opacity: 0.9;
+  background: #f1f5f9;
 }
 
 .ip-group-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 600; /* 标题字重加粗一点 */
+  font-size: 0.9rem;
+  color: #1e293b;
 }
 
 .ip-group-count {
-  background: rgba(255, 255, 255, 0.2);
+  background: #e2e8f0; /* 标签底色配合浅色主题 */
+  color: #64748b;
   padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  border-radius: 12px; /* 药丸形状更具现代感 */
   font-size: 0.75rem;
+  font-weight: 500;
 }
 
+/* --- 表格样式 --- */
 .ip-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: fixed; /* 解决列宽不对齐的神器 */
 }
 
 .ip-table th,
 .ip-table td {
-  padding: 8px 14px;
+  padding: 10px 16px; /* 稍微增加一点内边距 */
   text-align: left;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light, #ebeef5);
   font-size: 0.8125rem;
 }
 
 .ip-table th {
-  background: var(--bg-gray-50);
+  background: #ffffff; /* 表头纯白，和上面灰色的 header 形成反差 */
   font-weight: 500;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  color: #94a3b8;
 }
 
 .ip-table tr:hover td {
-  background: var(--bg-gray-50);
+  background: #fcfcfd;
 }
 
 .ip-table tr:last-child td {
   border-bottom: none;
 }
 
-.ip-table tr.idle td {
-  color: var(--text-muted);
-}
-
+/* --- IP 数据展示 --- */
 .ip-cell {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: 0.8125rem;
 }
 
 .ip-cell.occupied {
-  color: var(--text-primary);
+  /* ✨ 和服务列表统一：代码块风格的 IP 显示 */
+  color: #334155; 
+  background-color: #f1f5f9; 
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  display: inline-block;
+  line-height: 1;
 }
 
 .ip-cell.idle {
-  color: var(--text-muted);
+  color: #cbd5e1; /* 空闲 IP 颜色再淡一点，降低干扰 */
 }
 
 .host-link {
-  color: var(--primary-color);
+  color: var(--primary-color, #409eff);
   cursor: pointer;
+  font-weight: 500;
 }
 
 .host-link:hover {
   text-decoration: underline;
 }
 
-.service-tag {
-  display: inline-flex;
+/* --- 标签优化 --- */
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   align-items: center;
-  gap: 3px;
+}
+
+.service-tag {
+  display: inline-flex; /* ✨ 修复裁切问题 */
+  align-items: center;
+  justify-content: center;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
   color: white;
   cursor: pointer;
   font-weight: 500;
+  line-height: 1; /* ✨ 修复裁切问题 */
+  box-sizing: border-box;
 }
 
 .service-tag:hover {
   opacity: 0.85;
+  transform: translateY(-1px); /* 悬停时微微上浮的微交互 */
 }
 
 .add-service-btn {
+  display: inline-flex;
+  align-items: center;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
-  background: #f5f7fa;
-  color: #909399;
-  border: 1px dashed #dcdfe6;
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
   cursor: pointer;
+  line-height: 1;
+  transition: all 0.2s;
 }
 
 .add-service-btn:hover {
-  background: #ecf5ff;
-  color: #409EFF;
-  border-color: #409EFF;
+  background: #eff6ff;
+  color: var(--primary-color, #409eff);
+  border-color: var(--primary-color, #409eff);
 }
 </style>
