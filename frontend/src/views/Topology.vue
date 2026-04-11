@@ -10,6 +10,7 @@
 
     <div class="topology-container">
       <div v-for="computer in store.state.computers" :key="computer.id" style="margin-bottom:12px;">
+        <!-- Host 节点 -->
         <div
           class="tree-node host-node"
           :class="{ active: selectedId === computer.id && selectedType === 'computer' }"
@@ -17,7 +18,10 @@
         >
           <div class="node-icon"><el-icon><Monitor /></el-icon></div>
           <div class="node-info">
-            <div class="node-name">{{ computer.name }}</div>
+            <div class="node-name">
+              {{ computer.name }}
+              <span v-if="computer.remarks" class="node-notes">{{ computer.remarks }}</span>
+            </div>
             <div class="node-meta">{{ computer.location || '' }}</div>
           </div>
           <div class="node-expand" @click.stop="toggleExpand(`host-${computer.id}`)">
@@ -26,73 +30,105 @@
           </div>
         </div>
 
+        <!-- Host 下的 OS 实例 -->
         <div v-if="expandedIds.includes(`host-${computer.id}`)" class="tree-children">
-          <div v-for="os in getAllOsInstances(computer.id)" :key="os.id" style="margin-bottom:4px;">
-            <!-- Skip VMs here — they render inside their parent's expanded section -->
-            <template v-if="!os.parentOsId">
+          <div v-for="os in getDirectChildrenOs(computer.id)" :key="os.id" style="margin-bottom:4px;">
+            <!-- OS 节点 -->
             <div
               class="tree-node os-node"
-              :class="{ 'is-parent': !os.parentOsId, active: selectedId === os.id && selectedType === 'os_instance' }"
+              :class="{ 'is-parent': hasChildren(os.id), active: selectedId === os.id && selectedType === 'os_instance' }"
               @click="selectNode('os_instance', os)"
             >
               <div class="node-icon"><el-icon><component :is="getOsIcon(os.type)" /></el-icon></div>
               <div class="node-info">
                 <div class="node-name">
-                  <el-tag size="small" :type="os.parentOsId ? 'warning' : 'success'">
-                    {{ os.parentOsId ? 'VM' : 'Host' }}
+                  <el-tag size="small" :type="getOsTypeTagType(os.type)">
+                    {{ os.parentOsId ? os.type : '底层' }}
                   </el-tag>
                   {{ os.name }}
+                  <span v-if="os.notes" class="node-notes">{{ os.notes }}</span>
                 </div>
-                <div class="node-meta">{{ os.type }} · {{ os.ipAddress || '无IP' }}</div>
+                <div class="node-meta">{{ os.ipAddress || '无IP' }}</div>
               </div>
-              <div v-if="os.childVmIds && os.childVmIds.length" class="node-expand" @click.stop="toggleExpand(`os-${os.id}`)">
+              <div v-if="hasChildren(os.id) || getOsServices(os.id).length" class="node-expand" @click.stop="toggleExpand(`os-${os.id}`)">
                 <el-icon v-if="!expandedIds.includes(`os-${os.id}`)"><ArrowRight /></el-icon>
                 <el-icon v-else><ArrowDown /></el-icon>
               </div>
             </div>
 
-            <div v-if="expandedIds.includes(`os-${os.id}`)">
-              <div v-if="os.childVmIds && os.childVmIds.length" class="vm-children">
-                <div v-for="childId in os.childVmIds" :key="childId" style="margin-bottom:2px;">
-                  <div
-                    class="tree-node vm-node"
-                    :class="{ active: selectedId === childId && selectedType === 'os_instance' }"
-                    @click="selectChildVm(childId)"
-                  >
-                    <div class="node-icon"><el-icon><component :is="getChildVmIcon(childId)" /></el-icon></div>
+            <!-- OS 下的子 VM/LXC 和服务 -->
+            <div v-if="expandedIds.includes(`os-${os.id}`)" class="vm-children">
+              <!-- 子 VM/LXC 及其服务 -->
+              <div v-for="childOs in getChildOsInstances(os.id)" :key="childOs.id" class="child-os-wrapper">
+                <div
+                  class="tree-node vm-node"
+                  :class="{ active: selectedId === childOs.id && selectedType === 'os_instance' }"
+                  @click="selectNode('os_instance', childOs)"
+                >
+                  <div class="node-icon"><el-icon><component :is="getOsIcon(childOs.type)" /></el-icon></div>
+                  <div class="node-info">
+                    <div class="node-name">
+                      <el-tag size="small" :type="getOsTypeTagType(childOs.type)">{{ childOs.type }}</el-tag>
+                      {{ childOs.name }}
+                      <span v-if="childOs.notes" class="node-notes">{{ childOs.notes }}</span>
+                    </div>
+                    <div class="node-meta">{{ childOs.ipAddress || '无IP' }}</div>
+                  </div>
+                  <div v-if="getOsServices(childOs.id).length" class="node-expand" @click.stop="toggleExpand(`child-os-${childOs.id}`)">
+                    <el-icon v-if="!expandedIds.includes(`child-os-${childOs.id}`)"><ArrowRight /></el-icon>
+                    <el-icon v-else><ArrowDown /></el-icon>
+                  </div>
+                </div>
+
+                <!-- 子 VM/LXC 的服务 -->
+                <div v-if="expandedIds.includes(`child-os-${childOs.id}`)" class="child-services">
+                  <div v-for="svc in getOsServices(childOs.id)" :key="svc.id" class="tree-node service-node" :class="{ active: selectedId === svc.id && selectedType === 'service' }" @click="selectNode('service', svc)">
+                    <div class="node-icon"><el-icon><Connection /></el-icon></div>
                     <div class="node-info">
                       <div class="node-name">
-                        <el-tag size="small" type="warning">{{ getChildVmType(childId) }}</el-tag>
-                        {{ getChildVmName(childId) }}
+                        <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
+                          {{ svc.type }}
+                        </el-tag>
+                        {{ svc.name }}
+                        <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
                       </div>
-                      <div class="node-meta">{{ getChildVmIp(childId) }}</div>
+                      <div class="node-meta">
+                        <el-tag size="small" :type="svc.protocol === 'https' ? 'success' : 'info'">
+                          {{ svc.protocol?.toUpperCase() }}
+                        </el-tag>
+                        {{ svc.ip_address }}:{{ svc.port }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div v-if="getOsServices(os.id).length" class="service-children">
-                <div v-for="svc in getOsServices(os.id)" :key="svc.id" style="margin-bottom:2px;">
-                  <div
-                    class="tree-node service-node"
-                    :class="{ active: selectedId === svc.id && selectedType === 'service' }"
-                    @click="selectNode('service', svc)"
-                  >
-                    <div class="node-icon"><el-icon><Connection /></el-icon></div>
-                    <div class="node-info">
-                      <div class="node-name">
-                        <el-tag size="small" :type="svc.protocol === 'https' ? 'success' : 'info'">
-                          {{ svc.protocol?.toUpperCase() }}
-                        </el-tag>
-                        {{ svc.name }}
-                      </div>
-                      <div class="node-meta">{{ svc.ip_address }}:{{ svc.port }}</div>
+              <!-- 顶级 OS 自己的服务 -->
+              <div v-for="svc in getOsServices(os.id)" :key="svc.id" style="margin-bottom:2px;">
+                <div
+                  class="tree-node service-node"
+                  :class="{ active: selectedId === svc.id && selectedType === 'service' }"
+                  @click="selectNode('service', svc)"
+                >
+                  <div class="node-icon"><el-icon><Connection /></el-icon></div>
+                  <div class="node-info">
+                    <div class="node-name">
+                      <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
+                        {{ svc.type }}
+                      </el-tag>
+                      {{ svc.name }}
+                      <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
+                    </div>
+                    <div class="node-meta">
+                      <el-tag size="small" :type="svc.protocol === 'https' ? 'success' : 'info'">
+                        {{ svc.protocol?.toUpperCase() }}
+                      </el-tag>
+                      {{ svc.ip_address }}:{{ svc.port }}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            </template>
           </div>
         </div>
       </div>
@@ -103,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, inject, watch, onMounted } from 'vue'
 import { Monitor, Box, Connection, ArrowRight, ArrowDown, Odometer, Tickets } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 
@@ -128,45 +164,55 @@ const getOsIcon = (type) => {
   return osIconMap[type] || osIconMap['default']
 }
 
-const getAllOsInstances = (computerId) => {
-  return store.getComputerOsInstances(computerId)
+// 获取 OS 类型颜色
+const getOsTypeColor = (typeName) => {
+  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
+  return config?.color || '#f59e0b' // 默认黄色
+}
+
+// 获取 OS 类型标签显示
+const getOsTypeTagType = (typeName) => {
+  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
+  if (config?.color) {
+    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
+    return colorMap[config.color] || 'warning'
+  }
+  return 'warning'
+}
+
+// 获取服务类型标签显示
+const getServiceTypeTagType = (typeName) => {
+  const config = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)
+  if (config?.color) {
+    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
+    return colorMap[config.color] || 'info'
+  }
+  return 'info'
+}
+
+// 获取直接子 OS 实例（顶级，没有父）
+const getDirectChildrenOs = (computerId) => {
+  return store.state.allOsInstances.filter(os => os.computerId === computerId && !os.parentOsId)
+}
+
+// 获取子 VM/LXC
+const getChildOsInstances = (parentOsId) => {
+  return store.state.allOsInstances.filter(os => os.parentOsId === parentOsId)
+}
+
+// 检查是否有子节点
+const hasChildren = (osId) => {
+  return store.state.allOsInstances.some(os => os.parentOsId === osId)
 }
 
 const getOsServices = (osId) => {
   return store.getOsServices(osId)
 }
 
-const getChildVmName = (childId) => {
-  const vm = store.getOsInstanceById(childId)
-  return vm?.name || ''
-}
-
-const getChildVmType = (childId) => {
-  const vm = store.getOsInstanceById(childId)
-  return vm?.type || 'VM'
-}
-
-const getChildVmIp = (childId) => {
-  const vm = store.getOsInstanceById(childId)
-  return vm?.ipAddress || ''
-}
-
-const getChildVmIcon = (childId) => {
-  const vm = store.getOsInstanceById(childId)
-  return getOsIcon(vm?.type)
-}
-
 const selectNode = (type, data) => {
   selectedType.value = type
   selectedId.value = data.id
   openDrawer(type, data)
-}
-
-const selectChildVm = (childId) => {
-  const vm = store.getOsInstanceById(childId)
-  if (vm) {
-    selectNode('os_instance', vm)
-  }
 }
 
 const toggleExpand = (id) => {
@@ -180,16 +226,19 @@ const toggleExpand = (id) => {
 
 const expandAll = () => {
   const ids = []
+  // 展开所有 host
   store.state.computers.forEach(c => {
     ids.push(`host-${c.id}`)
-    store.getComputerOsInstances(c.id).forEach(os => {
-      // Expand OS instances that have services OR child VMs
-      const hasServices = store.getOsServices(os.id).length > 0
-      const hasChildVms = os.childVmIds && os.childVmIds.length
-      if (hasServices || hasChildVms) {
-        ids.push(`os-${os.id}`)
-      }
-    })
+  })
+  // 展开所有 OS 实例
+  store.state.allOsInstances.forEach(os => {
+    ids.push(`os-${os.id}`)
+  })
+  // 展开所有子 VM/LXC 的服务
+  store.state.allOsInstances.forEach(os => {
+    if (os.parentOsId) {
+      ids.push(`child-os-${os.id}`)
+    }
   })
   expandedIds.value = ids
 }
@@ -198,8 +247,33 @@ const collapseAll = () => {
   expandedIds.value = []
 }
 
-// Expand all by default on mount
-expandAll()
+// Watch for data to be loaded, then expand all
+watch(
+  () => store.state.computers.length,
+  (newLen) => {
+    if (newLen > 0) {
+      setTimeout(() => expandAll(), 100)
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => store.state.services.length,
+  () => {
+    // Re-expand when services are loaded
+    if (store.state.computers.length > 0) {
+      expandAll()
+    }
+  }
+)
+
+onMounted(() => {
+  // Initial expand if data already loaded
+  if (store.state.computers.length > 0) {
+    expandAll()
+  }
+})
 </script>
 
 <style scoped>
@@ -273,6 +347,13 @@ expandAll()
   font-size: 0.8125rem; /* 约 13px，紧凑型后台标准字体 */
 }
 
+.node-notes {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
 .node-meta {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
   font-size: 0.75rem; /* 约 12px */
@@ -330,20 +411,33 @@ expandAll()
   color: #475569;
 }
 
-/* --- 压缩缩进线的间距 --- */
-.tree-children {
-  margin-left: 20px; /* 原 28px，向左靠拢 */
-  padding-left: 12px;
+/* --- 树状缩进 --- */
+/* Level 1: OS 实例（Host 下） */
+.tree-children,
+.vm-children {
+  margin-left: 32px;
+  padding-left: 16px;
   border-left: 2px solid #e2e8f0;
   margin-top: 2px;
 }
 
-.vm-children,
-.service-children {
-  margin-left: 12px; /* 向左靠拢 */
-  padding-left: 12px;
-  border-left: 1px dashed #cbd5e1; /* 虚线改细一点，降低视觉干扰 */
-  margin-top: 0;
+/* Level 2: 子 VM/LXC */
+.child-os-wrapper {
+  border-left: 1px solid #cbd5e1;
+  padding-left: 20px;
+  margin-left: 16px;
+  margin-bottom: 4px;
+}
+
+/* Level 3: 子 VM 下的服务 */
+.child-services {
+  padding-left: 24px;
+  border-left: 1px dashed #cbd5e1;
+  margin-left: 16px;
+}
+
+.child-services .tree-node {
+  margin-bottom: 2px;
 }
 
 :deep(.el-tag) {

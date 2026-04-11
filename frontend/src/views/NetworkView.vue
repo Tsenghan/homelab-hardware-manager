@@ -58,7 +58,7 @@
                   <span v-if="ip.hostName" class="host-link" @click="navigateToIp(ip)">{{ ip.hostName }}</span>
                   <span v-else style="color:#dcdfe6">—</span>
                 </td>
-                <td><el-tag size="small" :type="getIpTypeTag(ip.type)">{{ ip.typeName }}</el-tag></td>
+                <td><el-tag size="small" :type="getIpTypeTag(ip)">{{ ip.typeName }}</el-tag></td>
                 <td>
                   <div class="service-tags">
                     <span
@@ -204,6 +204,7 @@ const ipGroups = computed(() => {
           ip: os.ipAddress,
           hostName: os.name,
           type: 'os_instance',
+          osType: os.type,
           refId: os.id,
           entity: os
         })
@@ -227,11 +228,12 @@ const ipGroups = computed(() => {
         ip: ipStr,
         hostName: hostName,
         type: record?.type || (ipServices.length ? 'service_only' : 'idle'),
+        osType: record?.osType || '',
         refId: record?.refId || (ipServices.length ? ipServices[0].osInstanceId : null),
         occupied: !!record || ipServices.length > 0,
         entity: record?.entity || null,
         services: ipServices,
-        typeName: record ? 'OS' : (ipServices.length ? '服务' : '空闲')
+        typeName: record ? (record.osType || 'OS') : (ipServices.length ? '服务' : '空闲')
       })
     }
 
@@ -286,9 +288,14 @@ const toggleExpandAll = () => {
   }
 }
 
-const getIpTypeTag = (type) => {
+const getIpTypeTag = (ip) => {
+  if (ip.type === 'os_instance' && ip.osType) {
+    // Map OS type to tag type
+    const osTypeMap = { 'PVE': 'warning', 'LXC': 'info', 'VM': '', 'Linux': 'success', 'Windows': 'danger' }
+    return osTypeMap[ip.osType] || ''
+  }
   const map = { computer: '', os_instance: 'success', service: 'warning', service_only: 'warning', idle: 'info' }
-  return map[type] || 'info'
+  return map[ip.type] || 'info'
 }
 
 const navigateToIp = (ip) => {

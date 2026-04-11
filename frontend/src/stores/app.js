@@ -47,6 +47,10 @@ export function createAppStore() {
     state.typeConfigs.filter(t => t.category === 'protocol')
   )
 
+  const serviceTypeConfigs = computed(() =>
+    state.typeConfigs.filter(t => t.category === 'service_type')
+  )
+
   // ==================== Data Loading ====================
   async function loadData() {
     state.loading = true
@@ -422,6 +426,29 @@ export function createAppStore() {
     if (idx >= 0) state.computers[idx] = fullRes
   }
 
+  async function updateOsInstanceById(id, form) {
+    const res = await api.updateOsInstance(id, {
+      name: form.name,
+      os_type: form.os_type,
+      parent_os_id: form.parent_os_id || null,
+      ip_address: form.ip_address,
+      mac_address: form.mac_address,
+      notes: form.notes
+    })
+    const idx = state.allOsInstances.findIndex(os => os.id === id)
+    if (idx >= 0) {
+      state.allOsInstances[idx] = {
+        ...state.allOsInstances[idx],
+        name: res.name,
+        type: res.os_type,
+        ipAddress: res.ip_address,
+        macAddress: res.mac_address,
+        parentOsId: res.parent_os_id,
+        notes: res.notes
+      }
+    }
+  }
+
   async function deleteOsInstanceById(id) {
     await api.deleteOsInstance(id)
     state.allOsInstances = state.allOsInstances.filter(os => os.id !== id)
@@ -496,18 +523,98 @@ export function createAppStore() {
   // ==================== Export ====================
   function exportData() {
     const data = {
-      computers: state.computers,
+      version: 1,
+      exportDate: new Date().toISOString(),
+      typeConfigs: state.typeConfigs,
+      ipGroups: state.ipGroups,
+      computers: state.computers.map(c => ({
+        id: c.id,
+        name: c.name,
+        location: c.location,
+        remarks: c.remarks,
+        cpuIds: c.cpuIds || [],
+        ramIds: c.ramIds || [],
+        diskIds: c.diskIds || []
+      })),
       hardware: state.allHardware,
-      osInstances: state.allOsInstances,
-      services: state.services
+      osInstances: state.allOsInstances.map(os => ({
+        id: os.id,
+        computerId: os.computerId,
+        name: os.name,
+        type: os.type,
+        ipAddress: os.ipAddress,
+        macAddress: os.macAddress,
+        port: os.port,
+        parentOsId: os.parentOsId,
+        notes: os.notes
+      })),
+      services: state.services.map(s => ({
+        id: s.id,
+        osInstanceId: s.osInstanceId,
+        name: s.name,
+        type: s.type,
+        protocol: s.protocol,
+        ip_address: s.ip_address,
+        port: s.port,
+        description: s.description
+      }))
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'hardware-data.json'
+    a.download = `homelab-data-${new Date().toISOString().slice(0,10)}.json`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  async function importData(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result)
+
+          // Import type configs
+          if (data.typeConfigs && Array.isArray(data.typeConfigs)) {
+            for (const tc of data.typeConfigs) {
+              const exists = state.typeConfigs.find(t => t.category === tc.category && t.name === tc.name)
+              if (!exists) {
+                await api.createTypeConfig({ category: tc.category, name: tc.name, color: tc.color })
+              }
+            }
+          }
+
+          // Import IP groups
+          if (data.ipGroups && Array.isArray(data.ipGroups)) {
+            for (const g of data.ipGroups) {
+              const exists = state.ipGroups.find(t => t.name === g.name && t.subnet === g.subnet)
+              if (!exists) {
+                await api.createIpGroup({ name: g.name, subnet: g.subnet, startIp: g.startIp, endIp: g.endIp })
+              }
+            }
+          }
+
+          // Import computers
+          if (data.computers && Array.isArray(data.computers)) {
+            for (const c of data.computers) {
+              const exists = state.computers.find(t => t.name === c.name)
+              if (!exists) {
+                await api.createComputer({ name: c.name, location: c.location, remarks: c.remarks })
+              }
+            }
+          }
+
+          // Reload all data
+          await loadData()
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      }
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsText(file)
+    })
   }
 
   const store = {
@@ -522,6 +629,7 @@ export function createAppStore() {
     recentVms,
     osTypeConfigs,
     protocolConfigs,
+    serviceTypeConfigs,
 
     // Data Loading
     loadData,
@@ -544,6 +652,7 @@ export function createAppStore() {
     saveHardware,
     deleteHardware,
     saveOsInstance,
+    updateOsInstance: updateOsInstanceById,
     deleteOsInstance: deleteOsInstanceById,
     saveService,
     deleteService: deleteServiceById,
@@ -554,7 +663,8 @@ export function createAppStore() {
     deleteTypeConfig: deleteTypeConfigById,
 
     // Export
-    exportData
+    exportData,
+    importData
   }
 
   provide(STORE_KEY, store)

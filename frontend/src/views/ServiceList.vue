@@ -15,12 +15,39 @@
     </div>
 
     <div class="service-table">
-      <el-table :data="filteredServices" stripe style="width: 100%">
+      <el-table :data="filteredServices" stripe style="width: 100%" @row-click="handleRowClick">
         <template #empty>
            <el-empty description="暂无服务" />
         </template>
-        <el-table-column label="服务名" prop="name" min-width="150" />
+        <el-table-column label="服务名" min-width="150">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('name')">
+              服务名 <span class="th-sort-icon">{{ sortState.prop === 'name' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
+          <template #default="{ row }">
+            {{ row.name }}
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="100" align="center">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('type')">
+              类型 <span class="th-sort-icon">{{ sortState.prop === 'type' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
+          <template #default="{ row }">
+            <el-tag v-if="row.type" size="small" :type="getServiceTypeTagType(row.type)">
+              {{ row.type }}
+            </el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="协议" width="100" align="center">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('protocol')">
+              协议 <span class="th-sort-icon">{{ sortState.prop === 'protocol' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
           <template #default="{ row }">
             <el-tag size="small" :type="row.protocol === 'https' ? 'success' : 'info'">
               {{ row.protocol?.toUpperCase() }}
@@ -28,32 +55,33 @@
           </template>
         </el-table-column>
         <el-table-column label="地址" min-width="180">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('ip_address')">
+              地址 <span class="th-sort-icon">{{ sortState.prop === 'ip_address' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
           <template #default="{ row }">
             <span class="mono">{{ row.ip_address }}:{{ row.port }}</span>
           </template>
         </el-table-column>
         <el-table-column label="宿主系统" min-width="200">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('osInstanceId')">
+              宿主系统 <span class="th-sort-icon">{{ sortState.prop === 'osInstanceId' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
           <template #default="{ row }">
             {{ getOsInstanceName(row.osInstanceId) }}
           </template>
         </el-table-column>
         <el-table-column label="描述" min-width="150">
+          <template #header>
+            <span class="th-sortable" @click="handleSort('description')">
+              描述 <span class="th-sort-icon">{{ sortState.prop === 'description' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
+            </span>
+          </template>
           <template #default="{ row }">
             {{ row.description || ' ' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right"> <template #default="{ row }">
-            <div class="action-btns">
-              <el-button size="small" type="primary" text @click="openServiceUrl(row)">
-                <el-icon><Link /></el-icon> 打开
-              </el-button>
-              <el-button size="small" text @click="editService(row)">
-                <el-icon><Edit /></el-icon> 编辑
-              </el-button>
-              <el-button size="small" text @click="confirmDelete(row)">
-                <el-icon><Delete /></el-icon> 删除
-              </el-button>
-            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -64,6 +92,11 @@
       <el-form label-width="80px">
         <el-form-item label="服务名" required>
           <el-input v-model="form.name" placeholder="如 HomeAssistant" />
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="form.type" placeholder="选择类型" style="width:100%" clearable>
+            <el-option v-for="t in serviceTypeOptions" :key="t?.name" :label="t?.name" :value="t?.name" />
+          </el-select>
         </el-form-item>
         <el-form-item label="协议">
           <el-select v-model="form.protocol" placeholder="选择协议" style="width:100%">
@@ -94,20 +127,35 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { Plus, Search, Link, Edit, Delete } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const store = useAppStore()
+const openDrawer = inject('openDrawer')
 
 const filterText = ref('')
 const showDialog = ref(false)
 const editingService = ref(null)
 
+// 排序状态
+const sortState = ref({ prop: 'name', order: 'asc' })
+
+// 排序处理
+const handleSort = (prop) => {
+  if (sortState.value.prop === prop) {
+    sortState.value.order = sortState.value.order === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortState.value.prop = prop
+    sortState.value.order = 'asc'
+  }
+}
+
 const form = ref({
   id: null,
   name: '',
+  type: '',
   protocol: 'http',
   ip_address: '',
   port: 80,
@@ -121,17 +169,69 @@ const protocolOptions = computed(() => {
   return Array.isArray(configs) ? configs : (configs.value || [])
 })
 
+const serviceTypeOptions = computed(() => {
+  const configs = store.serviceTypeConfigs
+  if (!configs) return []
+  return Array.isArray(configs) ? configs : (configs.value || [])
+})
+
+const getServiceTypeTagType = (typeName) => {
+  const config = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)
+  if (config) {
+    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
+    return colorMap[config.color] || ''
+  }
+  return 'info'
+}
+
 const filteredServices = computed(() => {
-  if (!filterText.value) return store.state.services
-  const q = filterText.value.toLowerCase()
-  return store.state.services.filter(s =>
-    s.name?.toLowerCase().includes(q) ||
-    (s.ip_address && s.ip_address.includes(q))
-  )
+  let result = store.state.services
+
+  // 过滤
+  if (filterText.value) {
+    const q = filterText.value.toLowerCase()
+    result = result.filter(s =>
+      s.name?.toLowerCase().includes(q) ||
+      (s.ip_address && s.ip_address.includes(q))
+    )
+  }
+
+  // 排序
+  const { prop, order } = sortState.value
+  if (prop && order) {
+    result = [...result].sort((a, b) => {
+      let aVal, bVal
+      if (prop === 'ip_address') {
+        // IP 地址排序，只看最后一节
+        aVal = a.ip_address ? parseInt(a.ip_address.split('.').pop()) : 0
+        bVal = b.ip_address ? parseInt(b.ip_address.split('.').pop()) : 0
+      } else if (prop === 'osInstanceId') {
+        // 宿主系统排序用名称
+        aVal = getOsInstanceName(a.osInstanceId) || ''
+        bVal = getOsInstanceName(b.osInstanceId) || ''
+      } else {
+        aVal = a[prop] || ''
+        bVal = b[prop] || ''
+      }
+      if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase()
+        bVal = bVal.toLowerCase()
+      }
+      if (aVal < bVal) return order === 'asc' ? -1 : 1
+      if (aVal > bVal) return order === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
+  return result
 })
 
 const getOsInstanceName = (id) => {
   return store.getOsInstanceName(id)
+}
+
+const handleRowClick = (row) => {
+  openDrawer('service', row)
 }
 
 const openServiceUrl = (s) => {
@@ -143,6 +243,7 @@ const openAddDialog = () => {
   form.value = {
     id: null,
     name: '',
+    type: '',
     protocol: 'http',
     ip_address: '',
     port: 80,
@@ -154,7 +255,16 @@ const openAddDialog = () => {
 
 const editService = (s) => {
   editingService.value = s
-  form.value = { ...s }
+  form.value = {
+    id: s.id,
+    name: s.name,
+    type: s.type || '',
+    protocol: s.protocol || 'http',
+    ip_address: s.ip_address || '',
+    port: s.port || 80,
+    osInstanceId: s.osInstanceId,
+    description: s.description || ''
+  }
   showDialog.value = true
 }
 
@@ -239,12 +349,28 @@ const confirmDelete = (s) => {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: 0.8125rem;
   /* ✨ 优化：不再用刺眼的亮蓝，改用专业代码块风格 */
-  color: #334155; 
-  background-color: #f1f5f9; 
+  color: #334155;
+  background-color: #f1f5f9;
   padding: 3px 6px;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
 }
+
+.th-sortable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.th-sortable:hover {
+  color: var(--primary-color, #409eff);
+}
+
+.th-sort-icon {
+  font-size: 10px;
+}
+
 .action-btns {
   display: flex;
   align-items: center;

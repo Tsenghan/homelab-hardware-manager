@@ -20,7 +20,7 @@
           v-for="item in group"
           :key="item.id"
           class="result-item"
-          @mousedown.prevent="selectResult(item, category)"
+          @mousedown.prevent="selectResult(item, category, $event)"
         >
           <el-icon class="result-icon"><component :is="getCategoryIcon(category)" /></el-icon>
           <div class="result-info">
@@ -76,6 +76,7 @@ const handleSearch = () => {
     const searchText = [
       item.name,
       item.model,
+      item.brand,
       item.ip_address,
       item.ip,
       item.remarks,
@@ -87,16 +88,23 @@ const handleSearch = () => {
 }
 
 const handleBlur = () => {
+  // Delay to allow click events to fire first
   setTimeout(() => {
-    showResults.value = false
-  }, 200)
+    if (showResults.value) {
+      showResults.value = false
+    }
+  }, 300)
 }
 
-const selectResult = (item, category) => {
+const selectResult = (item, category, event) => {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
   emit('select', { type: category, data: item })
-  showResults.value = false
   searchQuery.value = ''
   searchResults.value = []
+  showResults.value = false
 }
 
 const getCategoryLabel = (category) => {

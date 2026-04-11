@@ -18,9 +18,6 @@
           <el-form-item label="主机名称" required>
             <el-input v-model="formData.basic.name" placeholder="如 PVE-Server-1" />
           </el-form-item>
-          <el-form-item label="管理IP" required>
-            <el-input v-model="formData.basic.ip" placeholder="带外/物理管理IP" />
-          </el-form-item>
           <el-form-item label="物理位置">
             <el-input v-model="formData.basic.location" placeholder="如 机柜A-3U" />
           </el-form-item>
@@ -113,7 +110,7 @@ const emit = defineEmits(['update:modelValue', 'complete'])
 const currentStep = ref(0)
 
 const formData = reactive({
-  basic: { name: '', ip: '', location: '', notes: '' },
+  basic: { name: '', location: '', notes: '' },
   hardware: {
     cpuModel: '',
     cpuCores: 8,

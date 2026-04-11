@@ -44,6 +44,7 @@ export const deleteDisk = (id) => api.delete(`/disks/${id}`)
 export const getOsInstances = (computerId) => api.get(`/computers/${computerId}/os-instances`)
 export const getOsInstance = (id) => api.get(`/os-instances/${id}`)
 export const createOsInstance = (computerId, data) => api.post(`/computers/${computerId}/os-instances`, data)
+export const updateOsInstance = (id, data) => api.put(`/os-instances/${id}`, data)
 export const deleteOsInstance = (id) => api.delete(`/os-instances/${id}`)
 
 // ==================== Service ====================

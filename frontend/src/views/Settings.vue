@@ -1,6 +1,17 @@
 <template>
   <div class="settings-view">
-    <h2 class="page-title">配置管理</h2>
+    <div class="view-header">
+      <h2 class="page-title">配置管理</h2>
+      <div class="header-actions">
+        <el-button @click="handleExport">
+          <el-icon><Download /></el-icon> 导出
+        </el-button>
+        <el-button type="primary" @click="triggerImport">
+          <el-icon><Upload /></el-icon> 导入
+        </el-button>
+        <input ref="fileInput" type="file" accept=".json" style="display:none" @change="handleImport" />
+      </div>
+    </div>
     <div class="settings-container">
     <!-- OS类型配置 -->
     <div class="settings-section">
@@ -10,22 +21,18 @@
           <el-icon><Plus /></el-icon> 添加
         </el-button>
       </div>
-
-      <el-table :data="osTypeList" stripe style="width: 100%">
-        <el-table-column label="颜色" width="80">
-          <template #default="{ row }">
-            <el-color-picker v-model="row.color" size="small" @change="updateTypeConfig(row)" />
-          </template>
-        </el-table-column>
-        <el-table-column label="名称" prop="name" />
-        <el-table-column label="操作" width="100" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="danger" text @click="confirmDeleteType(row)">
-              <el-icon><Delete /></el-icon> 删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="tag-list">
+        <el-tag
+          v-for="item in osTypeList"
+          :key="item.id"
+          closable
+          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+          @click="openEditDialog(item, 'os_type')"
+          @close="confirmDeleteType(item)"
+        >
+          {{ item.name }}
+        </el-tag>
+      </div>
     </div>
 
     <!-- 服务协议配置 -->
@@ -36,24 +43,58 @@
           <el-icon><Plus /></el-icon> 添加
         </el-button>
       </div>
+      <div class="tag-list">
+        <el-tag
+          v-for="item in protocolList"
+          :key="item.id"
+          closable
+          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+          @click="openEditDialog(item, 'protocol')"
+          @close="confirmDeleteType(item)"
+        >
+          {{ item.name }}
+        </el-tag>
+      </div>
+    </div>
 
-      <el-table :data="protocolList" stripe style="width: 100%">
-        <el-table-column label="颜色" width="80">
-          <template #default="{ row }">
-            <el-color-picker v-model="row.color" size="small" @change="updateTypeConfig(row)" />
-          </template>
-        </el-table-column>
-        <el-table-column label="名称" prop="name" />
-        <el-table-column label="操作" width="100" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="danger" text @click="confirmDeleteType(row)">
-              <el-icon><Delete /></el-icon> 删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <!-- 服务类型配置 -->
+    <div class="settings-section">
+      <div class="section-header">
+        <span class="settings-section-title">服务类型</span>
+        <el-button type="primary" size="small" @click="showAddServiceTypeDialog = true">
+          <el-icon><Plus /></el-icon> 添加
+        </el-button>
+      </div>
+      <div class="tag-list">
+        <el-tag
+          v-for="item in serviceTypeList"
+          :key="item.id"
+          closable
+          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+          @click="openEditDialog(item, 'service_type')"
+          @close="confirmDeleteType(item)"
+        >
+          {{ item.name }}
+        </el-tag>
+      </div>
     </div>
     </div>
+
+    <!-- Edit Tag Dialog -->
+    <el-dialog v-model="showEditDialog" title="编辑配置" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="名称" required>
+          <el-input v-model="editForm.name" placeholder="名称" />
+        </el-form-item>
+        <el-form-item label="颜色">
+          <el-color-picker v-model="editForm.color" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveEdit">保存</el-button>
+      </template>
+    </el-dialog>
 
     <!-- Add OS Type Dialog -->
     <el-dialog v-model="showAddOsDialog" title="添加操作系统类型" width="400px">
@@ -86,22 +127,65 @@
         <el-button type="primary" @click="addType('protocol')">添加</el-button>
       </template>
     </el-dialog>
+
+    <!-- Add Service Type Dialog -->
+    <el-dialog v-model="showAddServiceTypeDialog" title="添加服务类型" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="名称" required>
+          <el-input v-model="newServiceType.name" placeholder="如 Web服务" />
+        </el-form-item>
+        <el-form-item label="颜色">
+          <el-color-picker v-model="newServiceType.color" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddServiceTypeDialog = false">取消</el-button>
+        <el-button type="primary" @click="addType('service_type')">添加</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Delete } from '@element-plus/icons-vue'
+import { Plus, Upload, Download } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const store = useAppStore()
+const fileInput = ref(null)
 
 const showAddOsDialog = ref(false)
 const showAddProtocolDialog = ref(false)
+const showAddServiceTypeDialog = ref(false)
+const showEditDialog = ref(false)
+const editingItem = ref(null)
+const editForm = ref({ name: '', color: '#409EFF' })
 
 const newOsType = ref({ name: '', color: '#409EFF' })
 const newProtocol = ref({ name: '', color: '#409EFF' })
+const newServiceType = ref({ name: '', color: '#409EFF' })
+
+const triggerImport = () => {
+  fileInput.value.click()
+}
+
+const handleExport = () => {
+  store.exportData()
+}
+
+const handleImport = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    await store.importData(file)
+    ElMessage.success('导入成功')
+  } catch (e) {
+    ElMessage.error('导入失败: ' + e.message)
+  }
+  event.target.value = ''
+}
 
 const osTypeList = computed(() =>
   store.state.typeConfigs.filter(t => t.category === 'os_type')
@@ -111,8 +195,19 @@ const protocolList = computed(() =>
   store.state.typeConfigs.filter(t => t.category === 'protocol')
 )
 
+const serviceTypeList = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'service_type')
+)
+
 const addType = async (category) => {
-  const form = category === 'os_type' ? newOsType.value : newProtocol.value
+  let form
+  if (category === 'os_type') {
+    form = newOsType.value
+  } else if (category === 'protocol') {
+    form = newProtocol.value
+  } else {
+    form = newServiceType.value
+  }
 
   if (!form.name.trim()) {
     ElMessage.warning('请输入名称')
@@ -125,8 +220,10 @@ const addType = async (category) => {
     form.color = '#409EFF'
     if (category === 'os_type') {
       showAddOsDialog.value = false
-    } else {
+    } else if (category === 'protocol') {
       showAddProtocolDialog.value = false
+    } else {
+      showAddServiceTypeDialog.value = false
     }
     ElMessage.success('添加成功')
   } catch (e) {
@@ -134,11 +231,23 @@ const addType = async (category) => {
   }
 }
 
-const updateTypeConfig = async (item) => {
+const openEditDialog = (item, category) => {
+  editingItem.value = item
+  editForm.value = { name: item.name, color: item.color }
+  showEditDialog.value = true
+}
+
+const saveEdit = async () => {
+  if (!editForm.value.name.trim()) {
+    ElMessage.warning('请输入名称')
+    return
+  }
   try {
-    await store.updateTypeConfig(item.id, { name: item.name, color: item.color })
+    await store.updateTypeConfig(editingItem.value.id, { name: editForm.value.name.trim(), color: editForm.value.color })
+    showEditDialog.value = false
+    ElMessage.success('保存成功')
   } catch (e) {
-    ElMessage.error('更新失败')
+    ElMessage.error('保存失败')
   }
 }
 
@@ -161,6 +270,18 @@ const confirmDeleteType = (item) => {
 <style scoped>
 .settings-view {
   padding: 0;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .view-header {
@@ -219,33 +340,60 @@ const confirmDeleteType = (item) => {
   margin-right: 8px;
 }
 
-/* --- ✨ 统一 Element Plus 表格美化 --- */
-:deep(.el-table) {
-  --el-table-border-color: var(--border-light, #ebeef5);
-  --el-table-header-bg-color: #f8fafc; /* 浅灰蓝表头 */
-  --el-table-header-text-color: #64748b;
-  border-radius: 6px; /* 让表格也有一点圆角 */
-  overflow: hidden;
-}
-
-:deep(.el-table::before) {
-  display: none; /* 去掉表格底部默认的白线 */
-}
-
-:deep(.el-table th.el-table__cell) {
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* 统一斑马纹颜色 */
-:deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
-  background-color: #fafafa;
-}
-
 /* 修改颜色选择器的对齐问题 */
 :deep(.el-color-picker) {
   vertical-align: middle;
+}
+
+/* 去除颜色选择器的边框 */
+:deep(.el-color-picker__trigger) {
+  border: none !important;
+  padding: 0;
+}
+
+:deep(.el-color-picker__color) {
+  border: none !important;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-list .el-tag {
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.tag-list .el-tag:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+:deep(.el-tag--success) {
+  --el-tag-success-bg-color: #67c23a;
+  --el-tag-success-border-color: #67c23a;
+  --el-tag-success-text-color: #fff;
+}
+
+:deep(.el-tag--warning) {
+  --el-tag-warning-bg-color: #e6a23c;
+  --el-tag-warning-border-color: #e6a23c;
+  --el-tag-warning-text-color: #fff;
+}
+
+:deep(.el-tag--danger) {
+  --el-tag-danger-bg-color: #f56c6c;
+  --el-tag-danger-border-color: #f56c6c;
+  --el-tag-danger-text-color: #fff;
+}
+
+:deep(.el-tag--info) {
+  --el-tag-info-bg-color: #909399;
+  --el-tag-info-border-color: #909399;
+  --el-tag-info-text-color: #fff;
 }
 </style>

@@ -10,33 +10,18 @@
       <GlobalSearch @select="handleSearchSelect" />
     </div>
     <div class="header-right">
-      <el-button circle title="导出数据" @click="exportData">
-        <el-icon><Download /></el-icon>
-      </el-button>
     </div>
   </header>
 </template>
 
 <script setup>
-import { Monitor, Download } from '@element-plus/icons-vue'
+import { Monitor } from '@element-plus/icons-vue'
 import GlobalSearch from './GlobalSearch.vue'
-import { useAppStore } from '../stores/app'
-import { ElMessage } from 'element-plus'
 
 const emit = defineEmits(['search'])
-const store = useAppStore()
 
 const handleSearchSelect = (result) => {
   emit('search', result)
-}
-
-const exportData = () => {
-  try {
-    store.exportData()
-    ElMessage.success('数据已导出')
-  } catch (e) {
-    ElMessage.error('导出失败')
-  }
 }
 </script>
 

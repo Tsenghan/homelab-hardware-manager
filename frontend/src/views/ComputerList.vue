@@ -26,31 +26,26 @@
             <el-icon><Monitor /></el-icon>
           </div>
           <div class="computer-info">
-            <div class="computer-name">{{ computer.name }}</div>
-            <div class="computer-ip">{{ computer.ip || '-' }}</div>
+            <div class="computer-name-row">
+              <span class="computer-name">{{ computer.name }}</span>
+              <span v-if="computer.location" class="computer-location">{{ computer.location }}</span>
+            </div>
+            <div v-if="computer.remarks" class="computer-remarks">{{ computer.remarks }}</div>
           </div>
         </div>
 
         <div class="card-body">
-          <div v-if="computer.location" class="info-row">
-            <span class="label">位置</span>
-            <span class="value">{{ computer.location }}</span>
-          </div>
-          <div v-if="computer.remarks" class="info-row">
-            <span class="label">备注</span>
-            <span class="value">{{ computer.remarks }}</span>
-          </div>
           <div class="info-row">
             <span class="label">CPU</span>
-            <span class="value">{{ computer.cpuIds?.length || 0 }} 颗</span>
+            <span class="value">{{ getComputerCpuName(computer.id) }}</span>
           </div>
           <div class="info-row">
             <span class="label">内存</span>
-            <span class="value">{{ computer.ramIds?.length || 0 }} 条</span>
+            <span class="value">{{ getComputerTotalRam(computer.id) }}</span>
           </div>
           <div class="info-row">
             <span class="label">硬盘</span>
-            <span class="value">{{ computer.diskIds?.length || 0 }} 块</span>
+            <span class="value">{{ getComputerTotalDisk(computer.id) }}</span>
           </div>
           <div class="info-row">
             <span class="label">虚拟机</span>
@@ -160,8 +155,8 @@ const filteredComputers = computed(() => {
   const q = filterText.value.toLowerCase()
   return store.state.computers.filter(c =>
     c.name.toLowerCase().includes(q) ||
-    (c.ip && c.ip.includes(q)) ||
-    (c.location && c.location.toLowerCase().includes(q))
+    (c.location && c.location.toLowerCase().includes(q)) ||
+    (c.remarks && c.remarks.toLowerCase().includes(q))
   )
 })
 
@@ -180,6 +175,26 @@ const toggleHardwareSelection = (type, id, computerId) => {
     if (idx > -1) form.value.diskIds.splice(idx, 1)
     else form.value.diskIds.push(id)
   }
+}
+
+const getComputerCpuName = (cid) => {
+  const cpus = store.getComputerCpus(cid)
+  if (cpus.length === 0) return '无'
+  return cpus.map(c => c.model).join(', ') || '无'
+}
+
+const getComputerTotalRam = (cid) => {
+  const rams = store.getComputerRams(cid)
+  if (rams.length === 0) return '无'
+  const total = rams.reduce((sum, r) => sum + (r.capacity || 0), 0)
+  return `${total} GB`
+}
+
+const getComputerTotalDisk = (cid) => {
+  const disks = store.getComputerDisks(cid)
+  if (disks.length === 0) return '无'
+  const total = disks.reduce((sum, d) => sum + (d.capacity || 0), 0)
+  return `${total} GB`
 }
 
 const editComputer = (c) => {
@@ -309,26 +324,31 @@ const resetForm = () => {
   overflow: hidden; /* 防止长名字溢出 */
 }
 
+.computer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .computer-name {
   font-size: 1.05rem;
   font-weight: 600;
   color: #1e293b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.computer-ip {
-  /* ✨ 与服务列表统一的 IP 极客风格 */
+.computer-location {
   font-size: 0.75rem;
   color: #475569;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
-  display: inline-block;
-  margin-top: 6px;
+}
+
+.computer-remarks {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 4px;
 }
 
 /* --- 卡片数据区 --- */

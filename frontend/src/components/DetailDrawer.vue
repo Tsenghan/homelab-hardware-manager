@@ -15,28 +15,27 @@
           <div class="section-title"><el-icon><InfoFilled /></el-icon> 基本信息</div>
           <div class="info-section">
             <div class="info-row"><span class="label">名称</span><span class="value">{{ data.name }}</span></div>
-            <div class="info-row"><span class="label">IP</span><span class="value ip">{{ data.ip || '-' }}</span></div>
             <div class="info-row"><span class="label">位置</span><span class="value">{{ data.location || '-' }}</span></div>
             <div v-if="data.remarks" class="info-row"><span class="label">备注</span><span class="value">{{ data.remarks }}</span></div>
           </div>
 
           <!-- 硬件 -->
           <div class="section-title" style="margin-top:20px;"><el-icon><Cpu /></el-icon> CPU</div>
-          <div v-for="cpu in getComputerCpus(data.id)" :key="cpu.id" class="hardware-item">
+          <div v-for="cpu in getComputerCpus(data.id)" :key="cpu.id" class="hardware-item col-item">
             <div class="item-name">{{ cpu.model }}</div>
             <div class="item-meta">{{ cpu.cores }}核 @ {{ cpu.clockSpeed }}GHz</div>
           </div>
           <div v-if="getComputerCpus(data.id).length === 0" class="empty-text">暂无CPU</div>
 
           <div class="section-title" style="margin-top:16px;"><el-icon><Histogram /></el-icon> 内存</div>
-          <div v-for="ram in getComputerRams(data.id)" :key="ram.id" class="hardware-item">
+          <div v-for="ram in getComputerRams(data.id)" :key="ram.id" class="hardware-item col-item">
             <div class="item-name">{{ ram.brand }} {{ ram.model }}</div>
             <div class="item-meta">{{ ram.capacity }}GB {{ ram.type }}</div>
           </div>
           <div v-if="getComputerRams(data.id).length === 0" class="empty-text">暂无内存</div>
 
           <div class="section-title" style="margin-top:16px;"><el-icon><Folder /></el-icon> 硬盘</div>
-          <div v-for="disk in getComputerDisks(data.id)" :key="disk.id" class="hardware-item">
+          <div v-for="disk in getComputerDisks(data.id)" :key="disk.id" class="hardware-item col-item">
             <div class="item-name">{{ disk.brand }} {{ disk.model }}</div>
             <div class="item-meta">{{ disk.capacity }}GB {{ disk.interface }}</div>
           </div>
@@ -50,12 +49,12 @@
           <div v-for="os in getComputerOsInstances(data.id)" :key="os.id" class="hardware-item">
             <div class="item-content" @click="selectNode('os_instance', os)">
               <div class="item-name">
-                <el-tag size="small" :type="os.parentOsId ? 'warning' : 'success'">
-                  {{ os.parentOsId ? 'VM' : 'Host' }}
+                <el-tag size="small" :type="getOsTypeTagType(os.type)">
+                  {{ os.parentOsId ? os.type : '底层' }}
                 </el-tag>
                 {{ os.name }}
               </div>
-              <div class="item-meta">{{ os.type }} · {{ os.ipAddress || '无IP' }}</div>
+              <div class="item-meta">{{ os.ipAddress || '无IP' }}</div>
             </div>
             <el-button size="small" type="danger" text @click.stop="confirmDeleteOs(os)">
               <el-icon><Delete /></el-icon>
@@ -72,12 +71,16 @@
             <div class="info-row"><span class="label">名称</span><span class="value">{{ data.name }}</span></div>
             <div class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
             <div class="info-row"><span class="label">IP</span><span class="value ip">{{ data.ipAddress || '未分配' }}</span></div>
-            <div v-if="data.port" class="info-row"><span class="label">端口</span><span class="value">{{ data.port }}</span></div>
             <div class="info-row"><span class="label">宿主</span><span class="value">{{ data.computerName }}</span></div>
+            <div v-if="data.notes" class="info-row"><span class="label">备注</span><span class="value">{{ data.notes }}</span></div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:16px;">
+            <el-button type="primary" @click="openEditOsDialog"><el-icon><Edit /></el-icon> 编辑配置</el-button>
           </div>
 
           <div class="section-title" style="margin-top:20px;"><el-icon><Connection /></el-icon> 运行服务</div>
-          <div v-for="svc in getOsServices(data.id)" :key="svc.id" class="hardware-item" @click="selectNode('service', svc)">
+          <div v-for="svc in getOsServices(data.id)" :key="svc.id" class="hardware-item service-item" @click="selectNode('service', svc)">
             <div class="item-name">{{ svc.name }}</div>
             <div class="item-meta">{{ svc.protocol }}://{{ svc.ip_address }}:{{ svc.port }}</div>
           </div>
@@ -89,16 +92,24 @@
       <template v-else-if="type === 'service'">
         <div class="detail-container">
           <div class="info-section">
-            <div class="info-row"><span class="label">服务名</span><span class="value">{{ data.name }}</span></div>
-            <div class="info-row"><span class="label">协议</span><span class="value"><el-tag size="small">{{ data.protocol?.toUpperCase() }}</el-tag></span></div>
-            <div class="info-row"><span class="label">IP</span><span class="value ip">{{ data.ip_address }}</span></div>
-            <div class="info-row"><span class="label">端口</span><span class="value" style="font-family:monospace;font-weight:500;">{{ data.port }}</span></div>
-            <div class="info-row"><span class="label">宿主</span><span class="value">{{ getOsInstanceName(data.osInstanceId) }}</span></div>
-            <div v-if="data.description" class="info-row"><span class="label">描述</span><span class="value">{{ data.description }}</span></div>
+            <div class="info-row full-row">
+              <div class="info-content">
+                <div class="info-row"><span class="label">服务名</span><span class="value">{{ data.name }}</span></div>
+                <div v-if="data.type" class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
+                <div class="info-row"><span class="label">协议</span><span class="value"><el-tag size="small">{{ data.protocol?.toUpperCase() }}</el-tag></span></div>
+                <div v-if="data.description" class="info-row"><span class="label">描述</span><span class="value">{{ data.description }}</span></div>
+              </div>
+              <div class="info-content">
+                <div class="info-row"><span class="label">地址</span><span class="value mono">{{ data.ip_address }}:{{ data.port }}</span></div>
+                <div class="info-row"><span class="label">宿主</span><span class="value">{{ getOsInstanceName(data.osInstanceId) }}</span></div>
+              </div>
+            </div>
           </div>
-          <div style="display:flex;gap:12px;margin-top:20px;">
+          <div class="service-actions">
             <el-button type="primary" @click="openServiceUrl"><el-icon><Link /></el-icon> 访问</el-button>
             <el-button @click="copyServiceUrl"><el-icon><CopyDocument /></el-icon> 复制</el-button>
+            <el-button @click="openEditServiceDialog"><el-icon><Edit /></el-icon> 编辑</el-button>
+            <el-button type="danger" @click="confirmDeleteService"><el-icon><Delete /></el-icon> 删除</el-button>
           </div>
         </div>
       </template>
@@ -108,7 +119,7 @@
 
 <script setup>
 import { computed, inject } from 'vue'
-import { Cpu, Histogram, Folder, Connection, Link, CopyDocument, Delete, InfoFilled, Box } from '@element-plus/icons-vue'
+import { Cpu, Histogram, Folder, Connection, Link, CopyDocument, Delete, InfoFilled, Box, Edit } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -118,7 +129,7 @@ const props = defineProps({
   data: Object
 })
 
-const emit = defineEmits(['update:modelValue', 'refresh', 'open-add-os'])
+const emit = defineEmits(['update:modelValue', 'refresh', 'open-add-os', 'open-edit-os', 'open-edit-service'])
 const store = useAppStore()
 const openDrawer = inject('openDrawer')
 
@@ -145,6 +156,16 @@ const getComputerDisks = (cid) => store.getComputerDisks(cid)
 const getComputerOsInstances = (cid) => store.getComputerOsInstances(cid)
 const getOsServices = (osId) => store.getOsServices(osId)
 const getOsInstanceName = (id) => store.getOsInstanceName(id)
+
+// 获取 OS 类型标签显示
+const getOsTypeTagType = (typeName) => {
+  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
+  if (config?.color) {
+    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
+    return colorMap[config.color] || 'warning'
+  }
+  return 'warning'
+}
 
 const selectNode = (type, data) => {
   openDrawer(type, data)
@@ -177,6 +198,31 @@ const copyServiceUrl = () => {
     navigator.clipboard.writeText(`${props.data.protocol}://${props.data.ip_address}:${props.data.port}`)
     ElMessage.success('已复制')
   }
+}
+
+const openEditOsDialog = () => {
+  emit('open-edit-os', props.data)
+}
+
+const openEditServiceDialog = () => {
+  emit('open-edit-service', props.data)
+}
+
+const confirmDeleteService = () => {
+  ElMessageBox.confirm(`确定要删除服务 "${props.data.name}" 吗?`, '确认删除', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await store.deleteService(props.data.id)
+      emit('refresh')
+      emit('update:modelValue', false)
+      ElMessage.success('删除成功')
+    } catch (e) {
+      ElMessage.error('删除失败')
+    }
+  }).catch(() => {})
 }
 </script>
 
@@ -268,10 +314,71 @@ const copyServiceUrl = () => {
   margin-top: 2px;
 }
 
+.service-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.service-item .item-name {
+  width: 100%;
+}
+
+.service-item .item-meta {
+  margin-top: 0;
+  padding-left: 0;
+}
+
+.col-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.col-item .item-meta {
+  margin-top: 0;
+  padding-left: 0;
+}
+
 .empty-text {
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8125rem;
+}
+
+.info-row.full-row {
+  display: flex;
+  gap: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.info-row.full-row .info-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-row.full-row .info-content .info-row {
+  padding: 6px 10px;
+}
+
+.service-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.value.mono {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-weight: 500;
+  color: #334155;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 </style>

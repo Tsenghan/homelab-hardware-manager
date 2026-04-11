@@ -171,6 +171,7 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     os_instance_id = db.Column(db.Integer, db.ForeignKey('os_instances.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50))
     protocol = db.Column(db.String(10))
     ip_address = db.Column(db.String(50))
     port = db.Column(db.Integer)
@@ -181,6 +182,7 @@ class Service(db.Model):
             'id': self.id,
             'os_instance_id': self.os_instance_id,
             'name': self.name,
+            'type': self.type,
             'protocol': self.protocol,
             'ip_address': self.ip_address,
             'port': self.port,

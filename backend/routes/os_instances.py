@@ -24,6 +24,7 @@ def create_service(os_instance_id):
     service = Service(
         os_instance_id=os_instance_id,
         name=data.get('name'),
+        type=data.get('type'),
         protocol=data.get('protocol'),
         ip_address=data.get('ip_address'),
         port=data.get('port'),
@@ -32,3 +33,17 @@ def create_service(os_instance_id):
     db.session.add(service)
     db.session.commit()
     return jsonify(service.to_dict()), 201
+
+
+@os_instances_bp.route('/os-instances/<int:id>', methods=['PUT'])
+def update_os_instance(id):
+    instance = OsInstance.query.get_or_404(id)
+    data = request.get_json()
+    instance.name = data.get('name', instance.name)
+    instance.os_type = data.get('os_type', instance.os_type)
+    instance.parent_os_id = data.get('parent_os_id', instance.parent_os_id)
+    instance.ip_address = data.get('ip_address', instance.ip_address)
+    instance.mac_address = data.get('mac_address', instance.mac_address)
+    instance.notes = data.get('notes', instance.notes)
+    db.session.commit()
+    return jsonify(instance.to_dict(include_details=True))

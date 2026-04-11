@@ -36,9 +36,9 @@
         </thead>
         <tbody>
           <tr v-for="cpu in store.state.allHardware.cpus" :key="cpu.id">
+            <td><span class="tech-data">{{ cpu.model }}</span></td>
             <td><span class="tech-data">{{ cpu.cores }} 核</span></td>
             <td><span class="tech-data">{{ cpu.clockSpeed }} GHz</span></td>
-            <td>{{ cpu.clockSpeed }} GHz</td>
             <td>{{ cpu.purchaseDate || '-' }}</td>
             <td>{{ cpu.remarks || '-' }}</td>
             <td>
@@ -193,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Cpu, Histogram, Folder, Plus } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 import { ElMessage } from 'element-plus'
@@ -289,6 +289,30 @@ const deleteHardware = async (type, id) => {
   font-size: 0.75rem;
   color: #64748b;
   white-space: nowrap; /* 防止表头文字换行 */
+}
+
+.hardware-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.hardware-table th.sortable:hover {
+  color: var(--primary-color, #409eff);
+}
+
+.th-sortable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.th-sortable:hover {
+  color: var(--primary-color, #409eff);
+}
+
+.th-sort-icon {
+  font-size: 10px;
 }
 
 /* --- 统一斑马纹 (深浅行) 风格 --- */

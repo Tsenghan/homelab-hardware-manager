@@ -15,10 +15,15 @@ def update_service(id):
     service = Service.query.get_or_404(id)
     data = request.get_json()
     service.name = data.get('name', service.name)
+    service.type = data.get('type', service.type)
     service.protocol = data.get('protocol', service.protocol)
     service.ip_address = data.get('ip_address', service.ip_address)
     service.port = data.get('port', service.port)
     service.description = data.get('description', service.description)
+    if 'osInstanceId' in data:
+        service.os_instance_id = data.get('osInstanceId')
+    elif 'os_instance_id' in data:
+        service.os_instance_id = data.get('os_instance_id')
     db.session.commit()
     return jsonify(service.to_dict())
 
