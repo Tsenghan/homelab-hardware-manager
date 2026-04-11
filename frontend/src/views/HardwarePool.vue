@@ -1,23 +1,35 @@
 <template>
   <div class="hardware-pool">
     <div class="view-header">
-      <h2 class="page-title">硬件库</h2>
-      <div>
-        <el-button-group>
-          <el-button :type="hardwareTab === 'cpu' ? 'primary' : ''" @click="hardwareTab = 'cpu'">
+      <h2 class="page-title">
+        硬件库
+        <span class="hardware-tabs">
+          <el-tag
+            :type="hardwareTab === 'cpu' ? 'primary' : 'info'"
+            :class="{ 'tab-active': hardwareTab === 'cpu' }"
+            @click="hardwareTab = 'cpu'"
+          >
             <el-icon><Cpu /></el-icon> CPU
-          </el-button>
-          <el-button :type="hardwareTab === 'ram' ? 'primary' : ''" @click="hardwareTab = 'ram'">
+          </el-tag>
+          <el-tag
+            :type="hardwareTab === 'ram' ? 'primary' : 'info'"
+            :class="{ 'tab-active': hardwareTab === 'ram' }"
+            @click="hardwareTab = 'ram'"
+          >
             <el-icon><Histogram /></el-icon> 内存
-          </el-button>
-          <el-button :type="hardwareTab === 'disk' ? 'primary' : ''" @click="hardwareTab = 'disk'">
+          </el-tag>
+          <el-tag
+            :type="hardwareTab === 'disk' ? 'primary' : 'info'"
+            :class="{ 'tab-active': hardwareTab === 'disk' }"
+            @click="hardwareTab = 'disk'"
+          >
             <el-icon><Folder /></el-icon> 硬盘
-          </el-button>
-        </el-button-group>
-        <el-button type="primary" style="margin-left: 12px" @click="addHardware">
-          <el-icon><Plus /></el-icon> 添加硬件
-        </el-button>
-      </div>
+          </el-tag>
+        </span>
+      </h2>
+      <el-button type="primary" @click="addHardware">
+        <el-icon><Plus /></el-icon> 添加硬件
+      </el-button>
     </div>
 
     <!-- CPU Table -->
@@ -345,5 +357,33 @@ const deleteHardware = async (type, id) => {
   line-height: 1;
   display: inline-flex;
   align-items: center;
+}
+
+/* --- 硬件库标签样式 --- */
+.hardware-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.hardware-tabs .el-tag {
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-light, #e4e7ed);
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.hardware-tabs .el-tag.tab-active {
+  background: var(--primary-color, #409eff);
+  border-color: var(--primary-color, #409eff);
+  color: #ffffff;
+}
+
+.hardware-tabs .el-icon {
+  margin-right: 4px;
 }
 </style>

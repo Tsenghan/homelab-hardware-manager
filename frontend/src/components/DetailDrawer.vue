@@ -92,21 +92,15 @@
       <template v-else-if="type === 'service'">
         <div class="detail-container">
           <div class="info-section">
-            <div class="info-row full-row">
-              <div class="info-content">
-                <div class="info-row"><span class="label">服务名</span><span class="value">{{ data.name }}</span></div>
-                <div v-if="data.type" class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
-                <div class="info-row"><span class="label">协议</span><span class="value"><el-tag size="small">{{ data.protocol?.toUpperCase() }}</el-tag></span></div>
-                <div v-if="data.description" class="info-row"><span class="label">描述</span><span class="value">{{ data.description }}</span></div>
-              </div>
-              <div class="info-content">
-                <div class="info-row"><span class="label">地址</span><span class="value mono">{{ data.ip_address }}:{{ data.port }}</span></div>
-                <div class="info-row"><span class="label">宿主</span><span class="value">{{ getOsInstanceName(data.osInstanceId) }}</span></div>
-              </div>
-            </div>
+            <div class="info-row"><span class="label">服务名</span><span class="value">{{ data.name }}</span></div>
+            <div v-if="data.type" class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
+            <div class="info-row"><span class="label">协议</span><span class="value"><el-tag size="small">{{ data.protocol?.toUpperCase() }}</el-tag></span></div>
+            <div class="info-row"><span class="label">地址</span><span class="value mono">{{ data.ip_address }}:{{ data.port }}</span></div>
+            <div class="info-row"><span class="label">宿主</span><span class="value">{{ getOsInstanceName(data.osInstanceId) }}</span></div>
+            <div v-if="data.description" class="info-row"><span class="label">描述</span><span class="value">{{ data.description }}</span></div>
           </div>
           <div class="service-actions">
-            <el-button type="primary" @click="openServiceUrl"><el-icon><Link /></el-icon> 访问</el-button>
+            <el-button @click="openServiceUrl"><el-icon><Link /></el-icon> 访问</el-button>
             <el-button @click="copyServiceUrl"><el-icon><CopyDocument /></el-icon> 复制</el-button>
             <el-button @click="openEditServiceDialog"><el-icon><Edit /></el-icon> 编辑</el-button>
             <el-button type="danger" @click="confirmDeleteService"><el-icon><Delete /></el-icon> 删除</el-button>
@@ -143,7 +137,7 @@ const drawerTitle = computed(() => {
 })
 
 const drawerSize = computed(() => {
-  return props.type === 'os_instance' ? '600px' : '500px'
+  return props.type === 'os_instance' ? '480px' : '400px'
 })
 
 const handleClose = () => {
@@ -371,6 +365,15 @@ const confirmDeleteService = () => {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border-light);
+}
+
+.service-actions .el-button {
+  border-radius: 6px;
+  font-size: 0.8125rem;
+}
+
+.service-actions .el-button .el-icon {
+  margin-right: 2px;
 }
 
 .value.mono {

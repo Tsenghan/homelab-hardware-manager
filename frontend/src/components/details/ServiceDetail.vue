@@ -34,7 +34,7 @@
     </div>
 
     <div class="action-section">
-      <el-button type="primary" @click="openService">
+      <el-button @click="openService">
         <el-icon><Link /></el-icon>
         访问服务
       </el-button>
@@ -74,25 +74,24 @@ const copyUrl = () => {
 .info-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
 .info-row {
-  display: flex;
+  flex-direction: column;
   padding: 12px;
   background: #f5f7fa;
   border-radius: 8px;
+  gap: 6px;
 }
 
 .info-row .label {
-  width: 80px;
   color: #909399;
   font-size: 14px;
 }
 
 .info-row .value {
-  flex: 1;
   color: #303133;
   font-size: 14px;
 }
