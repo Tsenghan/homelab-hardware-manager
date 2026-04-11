@@ -45,6 +45,22 @@ L3 应用层     → Service
 
 ---
 
+## 界面预览
+
+### 拓扑视图
+![拓扑视图](screenshots/PixPin_2026-04-11_22-06-59.png)
+
+### IP列表
+![IP列表](screenshots/PixPin_2026-04-11_22-07-24.png)
+
+### 服务列表
+![服务列表](screenshots/PixPin_2026-04-11_22-08-21.png)
+
+### 配置管理
+![配置管理](screenshots/PixPin_2026-04-11_22-08-42.png)
+
+---
+
 ## 技术栈
 
 | 层级 | 技术 |
