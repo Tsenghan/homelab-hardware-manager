@@ -59,7 +59,7 @@ L3 应用层     → Service
 
 ## 快速开始
 
-### 方式一：Docker 部署（推荐用于生产环境）
+### 方式一：Docker 部署（推荐）
 
 ```bash
 git clone https://github.com/Tsenghan/homelab-hardware-manager.git
@@ -68,6 +68,8 @@ docker-compose up -d
 ```
 
 访问 **http://your-server:5000** 即可。
+
+> 镜像自动从 Docker Hub 拉取，每次更新后重启容器即可使用最新版本。
 
 ---
 
@@ -95,11 +97,14 @@ python main.py
 
 ## 部署指南
 
-### Docker Compose（生产环境）
+### Docker Compose
 
 ```bash
 # 启动
 docker-compose up -d
+
+# 更新（拉取最新镜像）
+docker-compose pull && docker-compose up -d
 
 # 查看状态
 docker-compose ps
@@ -111,26 +116,18 @@ docker-compose logs -f
 docker-compose down
 ```
 
-### 手动 Docker
-
-```bash
-docker build -t homelab-manager .
-docker run -d --name homelab -p 5000:5000 homelab-manager
-```
-
 ### 数据持久化
 
-数据库存储在 Docker volume `homelab-data` 中：
-
-```bash
-docker volume inspect homelab-hardware-manager_homelab-data
-```
+数据库文件存储在 `data/` 目录（主机挂载），确保数据不丢失。
 
 ### 初始化数据
 
 首次启动时，系统会自动创建数据库表并写入示例数据（示例主机 PVE-Server-1、IP 分组、OS 类型、协议配置等）。
 
-如需手动初始化，重启容器即可重新触发 `seed_data_if_empty()`。
+如需重新初始化，删除 `data/` 目录后重启容器即可：
+```bash
+rm -rf data && docker-compose up -d
+```
 
 ---
 
