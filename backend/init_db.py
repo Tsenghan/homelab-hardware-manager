@@ -93,7 +93,7 @@ def load_example_data():
     db.session.commit()
 
     # ==================== Physical Server 1: PVE-Server-1 ====================
-    pve1 = Computer(name='PVE-Server-1', location='机柜A-3U', remarks='主要虚拟化宿主机，承担80%虚拟化负载')
+    pve1 = Computer(name='示例-PVE-Server-1', location='机柜A-3U', remarks='主要虚拟化宿主机，承担80%虚拟化负载')
     db.session.add(pve1)
     db.session.flush()
 
@@ -119,7 +119,7 @@ def load_example_data():
     db.session.add_all(disks_pve1)
 
     # ==================== Physical Server 2: PVE-Server-2 ====================
-    pve2 = Computer(name='PVE-Server-2', location='机柜A-4U', remarks='辅助虚拟化宿主机')
+    pve2 = Computer(name='示例-PVE-Server-2', location='机柜A-4U', remarks='辅助虚拟化宿主机')
     db.session.add(pve2)
     db.session.flush()
 
