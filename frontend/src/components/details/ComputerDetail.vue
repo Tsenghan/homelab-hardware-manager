@@ -25,7 +25,7 @@
       <el-tab-pane label="硬件" name="hardware">
         <div class="hardware-section">
           <div class="section-title">
-            <el-icon><Cpu /></el-icon> CPU ({{ cpus.length }})
+            <Cpu theme="outline" size="14" stroke="currentColor" /> CPU ({{ cpus.length }})
           </div>
           <div v-for="cpu in cpus" :key="cpu.id" class="hardware-item" @click="$emit('select', 'cpu', cpu)">
             <div class="item-name">{{ cpu.model }}</div>
@@ -33,7 +33,7 @@
           </div>
 
           <div class="section-title">
-            <el-icon><Histogram /></el-icon> 内存 ({{ rams.length }})
+            <MemoryOne theme="outline" size="14" stroke="currentColor" /> 内存 ({{ rams.length }})
           </div>
           <div v-for="ram in rams" :key="ram.id" class="hardware-item" @click="$emit('select', 'ram', ram)">
             <div class="item-name">{{ ram.brand }} {{ ram.model }}</div>
@@ -41,7 +41,7 @@
           </div>
 
           <div class="section-title">
-            <el-icon><Folder /></el-icon> 硬盘 ({{ disks.length }})
+            <HardDisk theme="outline" size="14" stroke="currentColor" /> 硬盘 ({{ disks.length }})
           </div>
           <div v-for="disk in disks" :key="disk.id" class="hardware-item" @click="$emit('select', 'disk', disk)">
             <div class="item-name">{{ disk.brand }} {{ disk.model }}</div>
@@ -70,7 +70,8 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { Cpu, Histogram, Folder } from '@element-plus/icons-vue'
+import { Cpu as EpCpu, Histogram as EpHistogram, Folder as EpFolder } from '@element-plus/icons-vue'
+import { Cpu, MemoryOne, HardDisk } from '@icon-park/vue-next'
 
 const props = defineProps({
   data: Object
@@ -171,6 +172,11 @@ if (props.data?.id) {
   margin-top: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid #e4e7ed;
+}
+
+.section-title :deep(.i-icon) {
+  display: flex;
+  align-items: center;
 }
 
 .hardware-item {

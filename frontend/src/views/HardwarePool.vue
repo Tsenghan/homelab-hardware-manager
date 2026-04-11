@@ -9,21 +9,21 @@
             :class="{ 'tab-active': hardwareTab === 'cpu' }"
             @click="hardwareTab = 'cpu'"
           >
-            <el-icon><Cpu /></el-icon> CPU
+            <Cpu theme="outline" size="14" stroke="currentColor" /> CPU
           </el-tag>
           <el-tag
             :type="hardwareTab === 'ram' ? 'primary' : 'info'"
             :class="{ 'tab-active': hardwareTab === 'ram' }"
             @click="hardwareTab = 'ram'"
           >
-            <el-icon><Histogram /></el-icon> 内存
+            <MemoryOne theme="outline" size="14" stroke="currentColor" /> 内存
           </el-tag>
           <el-tag
             :type="hardwareTab === 'disk' ? 'primary' : 'info'"
             :class="{ 'tab-active': hardwareTab === 'disk' }"
             @click="hardwareTab = 'disk'"
           >
-            <el-icon><Folder /></el-icon> 硬盘
+            <HardDisk theme="outline" size="14" stroke="currentColor" /> 硬盘
           </el-tag>
         </span>
       </h2>
@@ -206,7 +206,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Cpu, Histogram, Folder, Plus } from '@element-plus/icons-vue'
+import { Plus } from '@element-plus/icons-vue'
+import { Cpu, MemoryOne, HardDisk } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 import { ElMessage } from 'element-plus'
 
@@ -375,6 +376,11 @@ const deleteHardware = async (type, id) => {
   border: 1px solid var(--border-light, #e4e7ed);
   background: #f8fafc;
   color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .hardware-tabs .el-tag.tab-active {
@@ -383,7 +389,14 @@ const deleteHardware = async (type, id) => {
   color: #ffffff;
 }
 
-.hardware-tabs .el-icon {
-  margin-right: 4px;
+.hardware-tabs :deep(.i-icon) {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.hardware-tabs :deep(.i-icon svg) {
+  vertical-align: middle;
 }
 </style>

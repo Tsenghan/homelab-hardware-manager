@@ -1,32 +1,34 @@
 <template>
   <div class="network-view">
     <div class="view-header">
-      <h2 class="page-title">IP 网络视图</h2>
+      <h2 class="page-title">
+        IP列表
+        <span class="inline-filters">
+          <el-input v-model="ipFilter" placeholder="搜索IP..." clearable style="width: 160px; margin-left: 12px">
+            <template #prefix><el-icon><Search /></el-icon></template>
+          </el-input>
+          <el-select v-model="ipGroupFilter" placeholder="分组" clearable style="width: 140px; margin-left: 8px">
+            <el-option v-for="g in store.state.ipGroups" :key="g.id" :label="g.name + ' (' + g.subnet + ')'" :value="g.id" />
+          </el-select>
+          <el-checkbox v-model="showIdleIps" style="margin-left: 8px">显示空闲IP</el-checkbox>
+          <el-button type="primary" @click="showDialog = true" style="margin-left: 8px">
+            <el-icon><Plus /></el-icon>
+            添加分组
+          </el-button>
+        </span>
+      </h2>
       <div class="header-actions">
         <el-button @click="toggleExpandAll">
           {{ allExpanded ? '折叠全部' : '展开全部' }}
         </el-button>
-        <el-button @click="showDialog = true">
-          <el-icon><FolderAdd /></el-icon> 添加分组
-        </el-button>
       </div>
-    </div>
-
-    <div class="filter-bar">
-      <el-input v-model="ipFilter" placeholder="搜索IP或主机名..." clearable style="width: 300px">
-        <template #prefix><el-icon><Search /></el-icon></template>
-      </el-input>
-      <el-select v-model="ipGroupFilter" placeholder="分组" clearable style="width: 200px; margin-left: 12px">
-        <el-option v-for="g in store.state.ipGroups" :key="g.id" :label="g.name + ' (' + g.subnet + ')'" :value="g.id" />
-      </el-select>
-      <el-checkbox v-model="showIdleIps" style="margin-left: 12px">显示空闲IP</el-checkbox>
     </div>
 
     <div class="ip-groups">
       <div v-for="group in filteredIpGroups" :key="group.id" class="ip-group">
         <div class="ip-group-header" @click="toggleGroup(group.id)">
           <div class="ip-group-title">
-            <el-icon><Folder /></el-icon>
+            <FolderOpen theme="outline" size="16" stroke="currentColor" />
             <span>{{ group.name }}</span>
             <span style="opacity:0.7;font-size:12px">{{ group.startIp }} - {{ group.endIp }}</span>
             <span class="ip-group-count">{{ group.usedCount }}/{{ group.totalCount }} 已用</span>
@@ -144,7 +146,8 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { Folder, FolderAdd, Search, Edit, Delete, ArrowRight, ArrowDown } from '@element-plus/icons-vue'
+import { Search, Edit, Delete, ArrowRight, ArrowDown } from '@element-plus/icons-vue'
+import { FolderOpen } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -154,6 +157,15 @@ const openDrawer = inject('openDrawer')
 // 静态映射表，避免循环内重复创建
 const OS_TYPE_TAG_MAP = { 'PVE': 'warning', 'LXC': 'info', 'VM': '', 'Linux': 'success', 'Windows': 'danger' }
 const IP_TYPE_TAG_MAP = { computer: '', os_instance: 'success', service: 'warning', service_only: 'warning', idle: 'info' }
+
+const getServiceTypeColor = (typeName) => {
+  if (!typeName) return '#94a3b8'
+  const config = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)
+  if (config?.color) {
+    return config.color
+  }
+  return '#94a3b8'
+}
 
 const ipFilter = ref('')
 const ipGroupFilter = ref('')
@@ -248,10 +260,10 @@ const ipGroups = computed(() => {
         tagType = IP_TYPE_TAG_MAP[ipType] || 'info'
       }
 
-      // 提前计算服务颜色
+      // 提前计算服务颜色（基于服务类型）
       const processedServices = ipServices.map(svc => ({
         ...svc,
-        bgColor: store.getProtocolColor ? store.getProtocolColor(svc.protocol) : '#94a3b8'
+        bgColor: getServiceTypeColor(svc.type)
       }))
 
       ips.push({
@@ -422,9 +434,22 @@ expandedGroups.value = store.state.ipGroups.length > 0 ? [store.state.ipGroups[0
   margin-bottom: 20px;
 }
 
+.page-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .header-actions {
   display: flex;
   gap: 12px;
+}
+
+.inline-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .filter-bar {
@@ -480,6 +505,11 @@ expandedGroups.value = store.state.ipGroups.length > 0 ? [store.state.ipGroups[0
   color: #1e293b;
 }
 
+.ip-group-title :deep(.i-icon) {
+  display: flex;
+  align-items: center;
+}
+
 .ip-group-count {
   background: #e2e8f0; /* 标签底色配合浅色主题 */
   color: #64748b;
@@ -519,6 +549,11 @@ expandedGroups.value = store.state.ipGroups.length > 0 ? [store.state.ipGroups[0
   border-bottom: none;
 }
 
+.header-actions :deep(.i-icon) {
+  display: flex;
+  align-items: center;
+}
+
 /* --- IP 数据展示 --- */
 .ip-cell {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
@@ -541,7 +576,7 @@ expandedGroups.value = store.state.ipGroups.length > 0 ? [store.state.ipGroups[0
 }
 
 .host-link {
-  color: var(--primary-color, #409eff);
+  color: #1e293b;
   cursor: pointer;
   font-weight: 500;
 }

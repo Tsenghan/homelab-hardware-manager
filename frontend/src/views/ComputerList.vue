@@ -1,17 +1,16 @@
 <template>
   <div class="computer-list">
     <div class="view-header">
-      <h2 class="page-title">物理主机</h2>
+      <h2 class="page-title">
+        物理主机
+        <el-input v-model="filterText" placeholder="搜索主机..." clearable style="width: 200px; margin-left: 16px">
+          <template #prefix><el-icon><Search /></el-icon></template>
+        </el-input>
+      </h2>
       <el-button type="primary" @click="showDialog = true">
         <el-icon><Plus /></el-icon>
         添加主机
       </el-button>
-    </div>
-
-    <div class="filter-bar">
-      <el-input v-model="filterText" placeholder="搜索主机..." clearable style="width: 300px">
-        <template #prefix><el-icon><Search /></el-icon></template>
-      </el-input>
     </div>
 
     <div class="computer-grid">
@@ -23,7 +22,7 @@
       >
         <div class="card-header">
           <div class="computer-icon">
-            <el-icon><Monitor /></el-icon>
+            <Computer theme="outline" size="28" stroke="currentColor" />
           </div>
           <div class="computer-info">
             <div class="computer-name-row">
@@ -85,12 +84,14 @@
             v-for="cpu in store.state.allHardware.cpus"
             :key="cpu.id"
             class="checkbox-item"
-            :class="{ selected: form.cpuIds.includes(cpu.id), assigned: cpu.computerId && !form.cpuIds.includes(cpu.id) }"
+            :class="{ selected: form.cpuIds.includes(cpu.id), assigned: cpu.computerId && cpu.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('cpu', cpu.id, cpu.computerId)"
           >
             <div>{{ cpu.model }}</div>
             <div style="font-size:12px;color:#909399">{{ cpu.cores }}核</div>
-            <el-tag v-if="cpu.computerId" size="small" type="warning" style="margin-top:4px">已分配</el-tag>
+            <el-tag v-if="cpu.computerId && cpu.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
+            <el-tag v-else-if="cpu.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
+            <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
           </div>
         </div>
         <el-divider>选择 内存</el-divider>
@@ -99,11 +100,14 @@
             v-for="ram in store.state.allHardware.rams"
             :key="ram.id"
             class="checkbox-item"
-            :class="{ selected: form.ramIds.includes(ram.id), assigned: ram.computerId && !form.ramIds.includes(ram.id) }"
+            :class="{ selected: form.ramIds.includes(ram.id), assigned: ram.computerId && ram.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('ram', ram.id, ram.computerId)"
           >
             <div>{{ ram.brand }} {{ ram.model }}</div>
             <div style="font-size:12px;color:#909399">{{ ram.capacity }}GB {{ ram.type }}</div>
+            <el-tag v-if="ram.computerId && ram.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
+            <el-tag v-else-if="ram.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
+            <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
           </div>
         </div>
         <el-divider>选择 硬盘</el-divider>
@@ -112,11 +116,14 @@
             v-for="disk in store.state.allHardware.disks"
             :key="disk.id"
             class="checkbox-item"
-            :class="{ selected: form.diskIds.includes(disk.id), assigned: disk.computerId && !form.diskIds.includes(disk.id) }"
+            :class="{ selected: form.diskIds.includes(disk.id), assigned: disk.computerId && disk.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('disk', disk.id, disk.computerId)"
           >
             <div>{{ disk.brand }} {{ disk.model }}</div>
             <div style="font-size:12px;color:#909399">{{ disk.capacity }}GB {{ disk.interface }}</div>
+            <el-tag v-if="disk.computerId && disk.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
+            <el-tag v-else-if="disk.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
+            <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
           </div>
         </div>
       </el-form>
@@ -130,7 +137,8 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { Plus, Search, Monitor, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Search, Edit, Delete } from '@element-plus/icons-vue'
+import { Computer } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
@@ -161,7 +169,8 @@ const filteredComputers = computed(() => {
 })
 
 const toggleHardwareSelection = (type, id, computerId) => {
-  if (computerId) return
+  // 如果已分配给其他主机，不允许操作
+  if (computerId && computerId !== editingComputer.value?.id) return
   if (type === 'cpu') {
     const idx = form.value.cpuIds.indexOf(id)
     if (idx > -1) form.value.cpuIds.splice(idx, 1)
@@ -263,6 +272,11 @@ const resetForm = () => {
   margin-bottom: 20px;
 }
 
+.page-title {
+  display: flex;
+  align-items: center;
+}
+
 .filter-bar {
   margin-bottom: 16px;
   display: flex;
@@ -317,6 +331,11 @@ const resetForm = () => {
   color: white;
   font-size: 24px;
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); /* 给图标发一点点光 */
+}
+
+.computer-icon :deep(.i-icon) {
+  display: flex;
+  align-items: center;
 }
 
 .computer-info {

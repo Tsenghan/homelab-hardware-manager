@@ -9,14 +9,14 @@
     </div>
 
     <div class="topology-container">
-      <div v-for="computer in store.state.computers" :key="computer.id" style="margin-bottom:12px;">
+      <div v-for="computer in store.state.computers" :key="computer.id" style="margin-bottom:4px;">
         <!-- Host 节点 -->
         <div
           class="tree-node host-node"
           :class="{ active: selectedId === computer.id && selectedType === 'computer' }"
           @click="selectNode('computer', computer)"
         >
-          <div class="node-icon"><el-icon><Monitor /></el-icon></div>
+          <div class="node-icon"><Computer theme="outline" size="16" stroke="currentColor" /></div>
           <div class="node-info">
             <div class="node-name">
               {{ computer.name }}
@@ -32,20 +32,23 @@
 
         <!-- Host 下的 OS 实例 -->
         <div v-if="expandedIds.includes(`host-${computer.id}`)" class="tree-children">
-          <div v-for="os in getDirectChildrenOs(computer.id)" :key="os.id" style="margin-bottom:4px;">
+          <div v-for="os in getDirectChildrenOs(computer.id)" :key="os.id" >
             <!-- OS 节点 -->
             <div
               class="tree-node os-node"
               :class="{ 'is-parent': hasChildren(os.id), active: selectedId === os.id && selectedType === 'os_instance' }"
               @click="selectNode('os_instance', os)"
             >
-              <div class="node-icon"><el-icon><component :is="getOsIcon(os.type)" /></el-icon></div>
+              <div class="node-icon">
+                <DatabasePoint v-if="!os.parentOsId" theme="outline" size="16" stroke="currentColor" />
+                <DataServer v-else theme="outline" size="16" stroke="currentColor" />
+              </div>
               <div class="node-info">
                 <div class="node-name">
+                  {{ os.name }}
                   <el-tag size="small" :type="getOsTypeTagType(os.type)">
                     {{ os.parentOsId ? os.type : '底层' }}
                   </el-tag>
-                  {{ os.name }}
                   <span v-if="os.notes" class="node-notes">{{ os.notes }}</span>
                 </div>
                 <div class="node-meta">{{ os.ipAddress || '无IP' }}</div>
@@ -65,11 +68,13 @@
                   :class="{ active: selectedId === childOs.id && selectedType === 'os_instance' }"
                   @click="selectNode('os_instance', childOs)"
                 >
-                  <div class="node-icon"><el-icon><component :is="getOsIcon(childOs.type)" /></el-icon></div>
+                  <div class="node-icon">
+                    <DataServer theme="outline" size="16" stroke="currentColor" />
+                  </div>
                   <div class="node-info">
                     <div class="node-name">
-                      <el-tag size="small" :type="getOsTypeTagType(childOs.type)">{{ childOs.type }}</el-tag>
                       {{ childOs.name }}
+                      <el-tag size="small" :type="getOsTypeTagType(childOs.type)">{{ childOs.type }}</el-tag>
                       <span v-if="childOs.notes" class="node-notes">{{ childOs.notes }}</span>
                     </div>
                     <div class="node-meta">{{ childOs.ipAddress || '无IP' }}</div>
@@ -83,13 +88,13 @@
                 <!-- 子 VM/LXC 的服务 -->
                 <div v-if="expandedIds.includes(`child-os-${childOs.id}`)" class="child-services">
                   <div v-for="svc in getOsServices(childOs.id)" :key="svc.id" class="tree-node service-node" :class="{ active: selectedId === svc.id && selectedType === 'service' }" @click="selectNode('service', svc)">
-                    <div class="node-icon"><el-icon><Connection /></el-icon></div>
+                    <div class="node-icon"><System theme="outline" size="14" stroke="currentColor" /></div>
                     <div class="node-info">
                       <div class="node-name">
+                        {{ svc.name }}
                         <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
                           {{ svc.type }}
                         </el-tag>
-                        {{ svc.name }}
                         <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
                       </div>
                       <div class="node-meta">
@@ -104,19 +109,19 @@
               </div>
 
               <!-- 顶级 OS 自己的服务 -->
-              <div v-for="svc in getOsServices(os.id)" :key="svc.id" style="margin-bottom:2px;">
+              <div v-for="svc in getOsServices(os.id)" :key="svc.id" style="margin-bottom:0;">
                 <div
                   class="tree-node service-node"
                   :class="{ active: selectedId === svc.id && selectedType === 'service' }"
                   @click="selectNode('service', svc)"
                 >
-                  <div class="node-icon"><el-icon><Connection /></el-icon></div>
+                  <div class="node-icon"><System theme="outline" size="14" stroke="currentColor" /></div>
                   <div class="node-info">
                     <div class="node-name">
+                      {{ svc.name }}
                       <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
                         {{ svc.type }}
                       </el-tag>
-                      {{ svc.name }}
                       <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
                     </div>
                     <div class="node-meta">
@@ -140,7 +145,8 @@
 
 <script setup>
 import { ref, inject, watch, onMounted } from 'vue'
-import { Monitor, Box, Connection, ArrowRight, ArrowDown, Odometer, Tickets } from '@element-plus/icons-vue'
+import { ArrowRight, ArrowDown } from '@element-plus/icons-vue'
+import { Computer, Server, ComputerOne, System, DatabasePoint, DataServer } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 
 const store = useAppStore()
@@ -149,20 +155,6 @@ const openDrawer = inject('openDrawer')
 const expandedIds = ref([])
 const selectedId = ref(null)
 const selectedType = ref(null)
-
-// Icon mapping for different OS types
-const osIconMap = {
-  'PVE': Odometer,
-  'LXC': Tickets,
-  'VM': Box,
-  'Linux': Odometer,
-  'Windows': Tickets,
-  'default': Box
-}
-
-const getOsIcon = (type) => {
-  return osIconMap[type] || osIconMap['default']
-}
 
 // 获取 OS 类型颜色
 const getOsTypeColor = (typeName) => {
@@ -304,15 +296,16 @@ onMounted(() => {
 }
 
 /* ✨ 强制压缩 HTML 中写死的 margin-bottom */
-.topology-container > div { margin-bottom: 6px !important; }
+.topology-container > div { margin-bottom: 2px !important; }
 .tree-children > div { margin-bottom: 0px !important; }
 
 /* --- 核心：收紧树节点行高 --- */
 .tree-node {
   display: flex;
   align-items: center;
-  padding: 4px 8px; /* ✨ 大幅缩小上下内边距 */
-  border-radius: 4px; /* 圆角稍微收敛 */
+  padding: 3px 8px; /* ✨ 从 2px 8px 改为 3px，让文本高度更均衡 */
+  margin-bottom: 1px; /* ✨ 统一节点间距，拒绝松散 */
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
@@ -334,14 +327,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-right: 8px; /* 缩小右侧留白 */
+  padding-right: 4px;
 }
 
 /* ✨ 缩小字体，提升专业感 */
 .node-name {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-weight: 500;
   color: #1e293b;
   font-size: 0.8125rem; /* 约 13px，紧凑型后台标准字体 */
@@ -356,47 +349,57 @@ onMounted(() => {
 
 .node-meta {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  font-size: 0.75rem; /* 约 12px */
+  font-size: 0.7rem;
   color: #64748b;
   background: #f1f5f9;
-  padding: 1px 6px; /* 压缩标签内边距 */
-  border-radius: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
 }
 
-/* --- ✨ 同步缩小图标，避免撑大行高 --- */
+/* --- ✨ 统一图标尺寸和中性灰骨架色 --- */
 .node-icon {
-  width: 24px; /* 从 32px 缩减到 24px */
+  width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
-  font-size: 13px; /* 缩小图标内字体 */
-  color: white;
+  margin-right: 6px;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #64748b;
+  color: #fff;
 }
 
-.host-node .node-icon { background: linear-gradient(135deg, #10b981, #059669); }
-.os-node .node-icon { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.os-node.is-parent .node-icon { background: linear-gradient(135deg, #10b981, #059669); }
-.vm-node .node-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.node-icon :deep(.i-icon) {
+  display: flex;
+  align-items: center;
+}
 
-/* 服务节点变得更迷你 */
+/* 各层级的灰色微调：层级越高颜色越深 */
+.host-node .node-icon { background: #475569; } /* slate-600 */
+.os-node .node-icon { background: #64748b; } /* slate-500 */
+.os-node.is-parent .node-icon { background: #64748b; } /* slate-500 */
+.vm-node .node-icon { background: #94a3b8; } /* slate-400 */
+
+.service-node {
+  padding: 2px 8px; /* ✨ 最后一层极度压缩，体现从属感 */
+  margin-bottom: 0;
+}
+
+/* --- 统一所有图标的占位盒模型 --- */
 .service-node .node-icon {
-  background: #cbd5e1;
-  color: #475569;
-  width: 20px; 
-  height: 20px;
-  font-size: 11px;
-  border-radius: 4px;
-  box-shadow: none;
-}
-
-.node-expand {
-  width: 24px;
+  width: 24px;  /* ✨ 核心修复：强制与上面的实心图标 24px 同宽 */
   height: 24px;
+  margin-right: 6px; /* ✨ 强制与上面的图标保持相同的右边距 */
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 0;
+  box-shadow: none;
+  justify-content: center;
+}
+.node-expand {
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,34 +414,32 @@ onMounted(() => {
   color: #475569;
 }
 
-/* --- 树状缩进 --- */
-/* Level 1: OS 实例（Host 下） */
+/* 统一控制所有层级的左侧缩进容器 */
 .tree-children,
-.vm-children {
-  margin-left: 32px;
-  padding-left: 16px;
-  border-left: 2px solid #e2e8f0;
-  margin-top: 2px;
+.vm-children,
+.child-services {
+  /* ✨ 核心算式：8px(父级padding) + 12px(图标中点) = 20px */
+  margin-left: 20px; 
+  padding-left: 14px; /* 竖线到子节点文字的呼吸距离 */
+  border-left: 1px solid #cbd5e1; /* ✨ 改用 1px 细线，显得更清晰锐利 */
 }
 
-/* Level 2: 子 VM/LXC */
+/* 服务层用虚线区分 */
+.child-services {
+  border-left-style: dashed; 
+}
+
+/* ✨ 修复导致结构崩溃的“罪魁祸首” */
 .child-os-wrapper {
-  padding-left: 20px;
-  margin-left: 16px;
+  padding-left: 0; /* 删掉这里多余的边距，交给上面统一控制 */
+  margin-left: 0;
+  margin-bottom: 0;
+}
+
+/* 隐藏最后一个子节点的连接线尾巴（可选美化） */
+.child-services:last-child {
   margin-bottom: 4px;
 }
-
-/* Level 3: 子 VM 下的服务 */
-.child-services {
-  padding-left: 24px;
-  border-left: 1px dashed #cbd5e1;
-  margin-left: 16px;
-}
-
-.child-services .tree-node {
-  margin-bottom: 2px;
-}
-
 :deep(.el-tag) {
   line-height: 1;
   display: inline-flex;

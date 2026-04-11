@@ -2,7 +2,7 @@
   <header class="global-header">
     <div class="header-left">
       <h1 class="logo">
-        <el-icon><Monitor /></el-icon>
+        <Computer theme="outline" size="24" stroke="currentColor" />
         HomeLab 硬件资产
       </h1>
     </div>
@@ -15,8 +15,8 @@
 </template>
 
 <script setup>
-import { Monitor } from '@element-plus/icons-vue'
 import GlobalSearch from './GlobalSearch.vue'
+import { Computer } from '@icon-park/vue-next'
 
 const emit = defineEmits(['search'])
 
@@ -51,8 +51,9 @@ const handleSearchSelect = (result) => {
   color: var(--text-primary);
 }
 
-.logo .el-icon {
-  font-size: 24px;
+.logo :deep(.i-icon) {
+  display: flex;
+  align-items: center;
   color: var(--primary-color);
 }
 

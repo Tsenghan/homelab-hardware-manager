@@ -22,7 +22,7 @@
           class="result-item"
           @mousedown.prevent="selectResult(item, category, $event)"
         >
-          <el-icon class="result-icon"><component :is="getCategoryIcon(category)" /></el-icon>
+          <component :is="getCategoryIcon(category)" theme="outline" size="18" stroke="#409EFF" class="result-icon" />
           <div class="result-info">
             <div class="result-name">{{ item.name || item.model }}</div>
             <div class="result-meta">{{ getItemMeta(item, category) }}</div>
@@ -35,7 +35,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Search, Monitor, Cpu, Histogram, Folder, Box, Connection } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
+import { Computer, Cpu, MemoryOne, HardDisk, ComputerOne, System } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 
 const emit = defineEmits(['select'])
@@ -121,14 +122,14 @@ const getCategoryLabel = (category) => {
 
 const getCategoryIcon = (category) => {
   const icons = {
-    computer: Monitor,
+    computer: Computer,
     cpu: Cpu,
-    ram: Histogram,
-    disk: Folder,
-    os_instance: Box,
-    service: Connection
+    ram: MemoryOne,
+    disk: HardDisk,
+    os_instance: ComputerOne,
+    service: System
   }
-  return icons[category] || Monitor
+  return icons[category] || Computer
 }
 
 const getItemMeta = (item, category) => {
@@ -202,9 +203,8 @@ if (typeof window !== 'undefined') {
 }
 
 .result-icon {
-  font-size: 20px;
-  color: #409EFF;
   margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .result-info {

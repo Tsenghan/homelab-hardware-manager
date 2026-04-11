@@ -1,17 +1,16 @@
 <template>
   <div class="service-list">
     <div class="view-header">
-      <h2 class="page-title">服务列表</h2>
+      <h2 class="page-title">
+        服务列表
+        <el-input v-model="filterText" placeholder="搜索服务..." clearable style="width: 200px; margin-left: 16px">
+          <template #prefix><el-icon><Search /></el-icon></template>
+        </el-input>
+      </h2>
       <el-button type="primary" @click="openAddDialog">
         <el-icon><Plus /></el-icon>
         添加服务
       </el-button>
-    </div>
-
-    <div class="filter-bar">
-      <el-input v-model="filterText" placeholder="搜索服务..." clearable style="width: 300px">
-        <template #prefix><el-icon><Search /></el-icon></template>
-      </el-input>
     </div>
 
     <div class="service-table">
@@ -325,6 +324,11 @@ const confirmDelete = (s) => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
 }
 
 .filter-bar {

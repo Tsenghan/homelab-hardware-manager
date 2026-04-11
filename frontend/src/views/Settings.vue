@@ -2,85 +2,84 @@
   <div class="settings-view">
     <div class="view-header">
       <h2 class="page-title">配置管理</h2>
-      <div class="header-actions">
+    </div>
+    
+    <div class="settings-container">
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">操作系统类型</span>
+          <el-button type="primary" size="small" @click="showAddOsDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in osTypeList"
+            :key="item.id"
+            closable
+            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            @click="openEditDialog(item, 'os_type')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">服务协议</span>
+          <el-button type="primary" size="small" @click="showAddProtocolDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in protocolList"
+            :key="item.id"
+            closable
+            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            @click="openEditDialog(item, 'protocol')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">服务类型</span>
+          <el-button type="primary" size="small" @click="showAddServiceTypeDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in serviceTypeList"
+            :key="item.id"
+            closable
+            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            @click="openEditDialog(item, 'service_type')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
+    </div> <div class="import-export-section">
+      <span class="section-label">导入导出</span>
+      <div class="import-export-actions">
         <el-button @click="handleExport">
-          <el-icon><Download /></el-icon> 导出
+          <el-icon><Upload /></el-icon> 备份
         </el-button>
-        <el-button type="primary" @click="triggerImport">
-          <el-icon><Upload /></el-icon> 导入
+        <el-button @click="triggerImport">
+          <el-icon><Download /></el-icon> 导入配置及数据
         </el-button>
         <input ref="fileInput" type="file" accept=".json" style="display:none" @change="handleImport" />
       </div>
     </div>
-    <div class="settings-container">
-    <!-- OS类型配置 -->
-    <div class="settings-section">
-      <div class="section-header">
-        <span class="settings-section-title">操作系统类型</span>
-        <el-button type="primary" size="small" @click="showAddOsDialog = true">
-          <el-icon><Plus /></el-icon> 添加
-        </el-button>
-      </div>
-      <div class="tag-list">
-        <el-tag
-          v-for="item in osTypeList"
-          :key="item.id"
-          closable
-          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
-          @click="openEditDialog(item, 'os_type')"
-          @close="confirmDeleteType(item)"
-        >
-          {{ item.name }}
-        </el-tag>
-      </div>
-    </div>
 
-    <!-- 服务协议配置 -->
-    <div class="settings-section">
-      <div class="section-header">
-        <span class="settings-section-title">服务协议</span>
-        <el-button type="primary" size="small" @click="showAddProtocolDialog = true">
-          <el-icon><Plus /></el-icon> 添加
-        </el-button>
-      </div>
-      <div class="tag-list">
-        <el-tag
-          v-for="item in protocolList"
-          :key="item.id"
-          closable
-          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
-          @click="openEditDialog(item, 'protocol')"
-          @close="confirmDeleteType(item)"
-        >
-          {{ item.name }}
-        </el-tag>
-      </div>
-    </div>
-
-    <!-- 服务类型配置 -->
-    <div class="settings-section">
-      <div class="section-header">
-        <span class="settings-section-title">服务类型</span>
-        <el-button type="primary" size="small" @click="showAddServiceTypeDialog = true">
-          <el-icon><Plus /></el-icon> 添加
-        </el-button>
-      </div>
-      <div class="tag-list">
-        <el-tag
-          v-for="item in serviceTypeList"
-          :key="item.id"
-          closable
-          :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
-          @click="openEditDialog(item, 'service_type')"
-          @close="confirmDeleteType(item)"
-        >
-          {{ item.name }}
-        </el-tag>
-      </div>
-    </div>
-    </div>
-
-    <!-- Edit Tag Dialog -->
     <el-dialog v-model="showEditDialog" title="编辑配置" width="400px">
       <el-form label-width="80px">
         <el-form-item label="名称" required>
@@ -96,7 +95,6 @@
       </template>
     </el-dialog>
 
-    <!-- Add OS Type Dialog -->
     <el-dialog v-model="showAddOsDialog" title="添加操作系统类型" width="400px">
       <el-form label-width="80px">
         <el-form-item label="名称" required>
@@ -112,7 +110,6 @@
       </template>
     </el-dialog>
 
-    <!-- Add Protocol Dialog -->
     <el-dialog v-model="showAddProtocolDialog" title="添加服务协议" width="400px">
       <el-form label-width="80px">
         <el-form-item label="名称" required>
@@ -128,7 +125,6 @@
       </template>
     </el-dialog>
 
-    <!-- Add Service Type Dialog -->
     <el-dialog v-model="showAddServiceTypeDialog" title="添加服务类型" width="400px">
       <el-form label-width="80px">
         <el-form-item label="名称" required>
@@ -143,8 +139,8 @@
         <el-button type="primary" @click="addType('service_type')">添加</el-button>
       </template>
     </el-dialog>
-  </div>
-</template>
+
+  </div> </template>
 
 <script setup>
 import { ref, computed } from 'vue'
@@ -395,5 +391,34 @@ const confirmDeleteType = (item) => {
   --el-tag-info-bg-color: #909399;
   --el-tag-info-border-color: #909399;
   --el-tag-info-text-color: #fff;
+}
+
+.import-export-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-white, #ffffff);
+  border: 1px solid var(--border-light, #e4e7ed);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+  margin-top: 24px;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.import-export-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.import-export-actions .el-button {
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  padding: 8px 16px;
 }
 </style>

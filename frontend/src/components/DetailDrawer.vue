@@ -20,21 +20,21 @@
           </div>
 
           <!-- 硬件 -->
-          <div class="section-title" style="margin-top:20px;"><el-icon><Cpu /></el-icon> CPU</div>
+          <div class="section-title" style="margin-top:20px;"><Cpu theme="outline" size="14" stroke="currentColor" /> CPU</div>
           <div v-for="cpu in getComputerCpus(data.id)" :key="cpu.id" class="hardware-item col-item">
             <div class="item-name">{{ cpu.model }}</div>
             <div class="item-meta">{{ cpu.cores }}核 @ {{ cpu.clockSpeed }}GHz</div>
           </div>
           <div v-if="getComputerCpus(data.id).length === 0" class="empty-text">暂无CPU</div>
 
-          <div class="section-title" style="margin-top:16px;"><el-icon><Histogram /></el-icon> 内存</div>
+          <div class="section-title" style="margin-top:16px;"><MemoryOne theme="outline" size="14" stroke="currentColor" /> 内存</div>
           <div v-for="ram in getComputerRams(data.id)" :key="ram.id" class="hardware-item col-item">
             <div class="item-name">{{ ram.brand }} {{ ram.model }}</div>
             <div class="item-meta">{{ ram.capacity }}GB {{ ram.type }}</div>
           </div>
           <div v-if="getComputerRams(data.id).length === 0" class="empty-text">暂无内存</div>
 
-          <div class="section-title" style="margin-top:16px;"><el-icon><Folder /></el-icon> 硬盘</div>
+          <div class="section-title" style="margin-top:16px;"><HardDisk theme="outline" size="14" stroke="currentColor" /> 硬盘</div>
           <div v-for="disk in getComputerDisks(data.id)" :key="disk.id" class="hardware-item col-item">
             <div class="item-name">{{ disk.brand }} {{ disk.model }}</div>
             <div class="item-meta">{{ disk.capacity }}GB {{ disk.interface }}</div>
@@ -43,7 +43,7 @@
 
           <!-- 系统 -->
           <div class="section-title" style="margin-top:16px;">
-            <el-icon><Box /></el-icon> 系统
+            <ComputerOne theme="outline" size="14" stroke="currentColor" /> 系统
             <el-button size="small" type="primary" @click="emit('open-add-os', data.id)" style="margin-left:8px">+ 添加</el-button>
           </div>
           <div v-for="os in getComputerOsInstances(data.id)" :key="os.id" class="hardware-item">
@@ -79,7 +79,7 @@
             <el-button type="primary" @click="openEditOsDialog"><el-icon><Edit /></el-icon> 编辑配置</el-button>
           </div>
 
-          <div class="section-title" style="margin-top:20px;"><el-icon><Connection /></el-icon> 运行服务</div>
+          <div class="section-title" style="margin-top:20px;"><System theme="outline" size="14" stroke="currentColor" /> 运行服务</div>
           <div v-for="svc in getOsServices(data.id)" :key="svc.id" class="hardware-item service-item" @click="selectNode('service', svc)">
             <div class="item-name">{{ svc.name }}</div>
             <div class="item-meta">{{ svc.protocol }}://{{ svc.ip_address }}:{{ svc.port }}</div>
@@ -113,7 +113,8 @@
 
 <script setup>
 import { computed, inject } from 'vue'
-import { Cpu, Histogram, Folder, Connection, Link, CopyDocument, Delete, InfoFilled, Box, Edit } from '@element-plus/icons-vue'
+import { Link, CopyDocument, Delete, InfoFilled, Edit } from '@element-plus/icons-vue'
+import { Cpu, MemoryOne, HardDisk, ComputerOne, System } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -272,6 +273,11 @@ const confirmDeleteService = () => {
 
 .section-title .el-button {
   margin-left: auto;
+}
+
+.section-title :deep(.i-icon) {
+  display: flex;
+  align-items: center;
 }
 
 .hardware-item {
