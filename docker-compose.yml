@@ -1,6 +1,6 @@
 services:
   homelab:
-    image: tsenghan/homelab-hardware-manager:latest
+    image: tsenghan/homelab-manager:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
