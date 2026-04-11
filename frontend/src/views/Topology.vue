@@ -423,7 +423,6 @@ onMounted(() => {
 
 /* Level 2: 子 VM/LXC */
 .child-os-wrapper {
-  border-left: 1px solid #cbd5e1;
   padding-left: 20px;
   margin-left: 16px;
   margin-bottom: 4px;

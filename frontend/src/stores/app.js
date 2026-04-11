@@ -537,27 +537,35 @@ export function createAppStore() {
         diskIds: c.diskIds || []
       })),
       hardware: state.allHardware,
-      osInstances: state.allOsInstances.map(os => ({
-        id: os.id,
-        computerId: os.computerId,
-        name: os.name,
-        type: os.type,
-        ipAddress: os.ipAddress,
-        macAddress: os.macAddress,
-        port: os.port,
-        parentOsId: os.parentOsId,
-        notes: os.notes
-      })),
-      services: state.services.map(s => ({
-        id: s.id,
-        osInstanceId: s.osInstanceId,
-        name: s.name,
-        type: s.type,
-        protocol: s.protocol,
-        ip_address: s.ip_address,
-        port: s.port,
-        description: s.description
-      }))
+      osInstances: state.allOsInstances.map(os => {
+        const computer = state.computers.find(c => c.id === os.computerId)
+        return {
+          id: os.id,
+          computerId: os.computerId,
+          computerName: computer?.name || '',
+          name: os.name,
+          type: os.type,
+          ipAddress: os.ipAddress,
+          macAddress: os.macAddress,
+          port: os.port,
+          parentOsId: os.parentOsId,
+          notes: os.notes
+        }
+      }),
+      services: state.services.map(s => {
+        const osInstance = state.allOsInstances.find(o => o.id === s.osInstanceId)
+        return {
+          id: s.id,
+          osInstanceId: s.osInstanceId,
+          osInstanceName: osInstance?.name || '',
+          name: s.name,
+          type: s.type,
+          protocol: s.protocol,
+          ip_address: s.ip_address,
+          port: s.port,
+          description: s.description
+        }
+      })
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -574,6 +582,7 @@ export function createAppStore() {
       reader.onload = async (e) => {
         try {
           const data = JSON.parse(e.target.result)
+          console.log('Importing data:', data)
 
           // Import type configs
           if (data.typeConfigs && Array.isArray(data.typeConfigs)) {
@@ -595,7 +604,7 @@ export function createAppStore() {
             }
           }
 
-          // Import computers
+          // Import computers first
           if (data.computers && Array.isArray(data.computers)) {
             for (const c of data.computers) {
               const exists = state.computers.find(t => t.name === c.name)
@@ -605,10 +614,153 @@ export function createAppStore() {
             }
           }
 
-          // Reload all data
+          // Reload to get updated computer list with IDs
+          await loadData()
+
+          // Import hardware (CPU, RAM, Disk)
+          if (data.hardware) {
+            // Import CPUs
+            if (data.hardware.cpus && Array.isArray(data.hardware.cpus)) {
+              for (const cpu of data.hardware.cpus) {
+                // Find computer by name if cpu has a computerId
+                let computerId = null
+                if (cpu.computerId && data.computers) {
+                  const oldComputer = data.computers.find(c => c.id === cpu.computerId)
+                  if (oldComputer) {
+                    const newComputer = state.computers.find(c => c.name === oldComputer.name)
+                    computerId = newComputer?.id
+                  }
+                }
+                const exists = state.allHardware.cpus.find(h => h.model === cpu.model && h.computerId === computerId)
+                if (!exists) {
+                  await api.createCpu({
+                    model: cpu.model,
+                    cores: cpu.cores,
+                    clockSpeed: cpu.clockSpeed,
+                    computer_id: computerId || null,
+                    remarks: cpu.remarks
+                  })
+                }
+              }
+            }
+
+            // Import RAMs
+            if (data.hardware.rams && Array.isArray(data.hardware.rams)) {
+              for (const ram of data.hardware.rams) {
+                let computerId = null
+                if (ram.computerId && data.computers) {
+                  const oldComputer = data.computers.find(c => c.id === ram.computerId)
+                  if (oldComputer) {
+                    const newComputer = state.computers.find(c => c.name === oldComputer.name)
+                    computerId = newComputer?.id
+                  }
+                }
+                const exists = state.allHardware.rams.find(h => h.model === ram.model && h.capacity === ram.capacity)
+                if (!exists) {
+                  await api.createRam({
+                    brand: ram.brand,
+                    model: ram.model,
+                    capacity_gb: ram.capacity,
+                    ram_type: ram.type,
+                    computer_id: computerId || null,
+                    remarks: ram.remarks
+                  })
+                }
+              }
+            }
+
+            // Import Disks
+            if (data.hardware.disks && Array.isArray(data.hardware.disks)) {
+              for (const disk of data.hardware.disks) {
+                let computerId = null
+                if (disk.computerId && data.computers) {
+                  const oldComputer = data.computers.find(c => c.id === disk.computerId)
+                  if (oldComputer) {
+                    const newComputer = state.computers.find(c => c.name === oldComputer.name)
+                    computerId = newComputer?.id
+                  }
+                }
+                const exists = state.allHardware.disks.find(h => h.model === disk.model && h.capacity === disk.capacity)
+                if (!exists) {
+                  await api.createDisk({
+                    brand: disk.brand,
+                    model: disk.model,
+                    capacity_gb: disk.capacity,
+                    interface: disk.interface,
+                    file_system: disk.fileSystem,
+                    purpose: disk.purpose,
+                    is_boot_disk: disk.isBootDisk,
+                    computer_id: computerId || null,
+                    remarks: disk.remarks
+                  })
+                }
+              }
+            }
+          }
+
+          // Reload to get updated hardware
+          await loadData()
+
+          // Import OS instances
+          if (data.osInstances && Array.isArray(data.osInstances)) {
+            for (const os of data.osInstances) {
+              // Check if already exists by name
+              const exists = state.allOsInstances.find(o => o.name === os.name)
+              if (!exists) {
+                // Find the computer by name
+                console.log('Looking for computer:', os.computerName, 'in', state.computers.map(c => c.name))
+                const computer = state.computers.find(c => c.name === os.computerName)
+                if (computer) {
+                  await api.createOsInstance(computer.id, {
+                    name: os.name,
+                    os_type: os.type,
+                    parent_os_id: null,
+                    ip_address: os.ipAddress,
+                    mac_address: os.macAddress,
+                    notes: os.notes
+                  })
+                } else {
+                  console.warn('Computer not found for OS:', os.computerName)
+                }
+              }
+            }
+          }
+
+          // Reload to get updated OS instances
+          await loadData()
+
+          // Import services
+          if (data.services && Array.isArray(data.services)) {
+            for (const svc of data.services) {
+              // Find OS instance by name first, then by old ID
+              let osInstance = state.allOsInstances.find(o => o.name === svc.osInstanceName)
+              if (!osInstance && svc.osInstanceId) {
+                // Try to find by old ID if name didn't match
+                osInstance = state.allOsInstances.find(o => o.id === svc.osInstanceId)
+              }
+              if (osInstance) {
+                const exists = state.services.find(s => s.name === svc.name && s.osInstanceId === osInstance.id)
+                if (!exists) {
+                  await api.createService(osInstance.id, {
+                    name: svc.name,
+                    type: svc.type,
+                    protocol: svc.protocol,
+                    ip_address: svc.ip_address,
+                    port: svc.port,
+                    description: svc.description
+                  })
+                }
+              } else {
+                console.warn('OS Instance not found for service:', svc.name, svc.osInstanceName)
+              }
+            }
+          }
+
+          // Final reload
           await loadData()
           resolve()
         } catch (err) {
+          console.error('Import error:', err)
           reject(err)
         }
       }
