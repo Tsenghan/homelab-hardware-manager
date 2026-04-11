@@ -58,14 +58,14 @@
                   <span v-if="ip.hostName" class="host-link" @click="navigateToIp(ip)">{{ ip.hostName }}</span>
                   <span v-else style="color:#dcdfe6">—</span>
                 </td>
-                <td><el-tag size="small" :type="getIpTypeTag(ip)">{{ ip.typeName }}</el-tag></td>
+                <td><el-tag size="small" :type="ip.tagType">{{ ip.typeName }}</el-tag></td>
                 <td>
                   <div class="service-tags">
                     <span
                       v-for="svc in ip.services"
                       :key="svc.id"
                       class="service-tag"
-                      :style="{ background: store.getProtocolColor(svc.protocol) }"
+                      :style="{ background: svc.bgColor }"
                       @click="openDrawer('service', svc)"
                     >
                       {{ svc.name }}:{{ svc.port }}
@@ -151,6 +151,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const store = useAppStore()
 const openDrawer = inject('openDrawer')
 
+// 静态映射表，避免循环内重复创建
+const OS_TYPE_TAG_MAP = { 'PVE': 'warning', 'LXC': 'info', 'VM': '', 'Linux': 'success', 'Windows': 'danger' }
+const IP_TYPE_TAG_MAP = { computer: '', os_instance: 'success', service: 'warning', service_only: 'warning', idle: 'info' }
+
 const ipFilter = ref('')
 const ipGroupFilter = ref('')
 const showIdleIps = ref(false)
@@ -191,9 +195,11 @@ const ipInRange = (ip, start, end) => {
 }
 
 const ipGroups = computed(() => {
-  // 预构建查找表，将 O(n) 查找变为 O(1)
+  // 预构建查找表，彻底干掉 find
   const osInstanceByIp = new Map()
+  const osInstanceById = new Map()
   store.state.allOsInstances.forEach(os => {
+    osInstanceById.set(os.id, os)
     if (os.ipAddress) {
       osInstanceByIp.set(os.ipAddress, os)
     }
@@ -214,29 +220,51 @@ const ipGroups = computed(() => {
     const startNum = ipToNum(group.startIp)
     const endNum = ipToNum(group.endIp)
 
+    // 提前计算 IP 前缀，避免循环内正则
+    const baseIpStr = group.startIp.substring(0, group.startIp.lastIndexOf('.') + 1)
+
     // Generate all IPs in range
     for (let i = startNum; i <= endNum; i++) {
-      const ipStr = group.startIp.replace(/\d+$/, i)
+      const ipStr = baseIpStr + i
       const osInstance = osInstanceByIp.get(ipStr)
       const ipServices = servicesByIp.get(ipStr) || []
 
       let hostName = osInstance?.name || ''
       if (!hostName && ipServices.length > 0) {
         const firstSvc = ipServices[0]
-        const hostOs = osInstanceByIp.get(firstSvc.ip_address) || store.state.allOsInstances.find(os => os.id === firstSvc.osInstanceId)
+        const hostOs = osInstanceByIp.get(firstSvc.ip_address) || osInstanceById.get(firstSvc.osInstanceId)
         hostName = hostOs?.computerName || hostOs?.name || firstSvc.name || ''
       }
+
+      const isOs = !!osInstance
+      const hasService = ipServices.length > 0
+      const ipType = isOs ? 'os_instance' : (hasService ? 'service_only' : 'idle')
+
+      // 提前计算 tagType，避免模板中重复调用函数
+      let tagType = 'info'
+      if (isOs && osInstance.type) {
+        tagType = OS_TYPE_TAG_MAP[osInstance.type] || ''
+      } else {
+        tagType = IP_TYPE_TAG_MAP[ipType] || 'info'
+      }
+
+      // 提前计算服务颜色
+      const processedServices = ipServices.map(svc => ({
+        ...svc,
+        bgColor: store.getProtocolColor ? store.getProtocolColor(svc.protocol) : '#94a3b8'
+      }))
 
       ips.push({
         ip: ipStr,
         hostName: hostName,
-        type: osInstance ? 'os_instance' : (ipServices.length ? 'service_only' : 'idle'),
+        type: ipType,
         osType: osInstance?.type || '',
-        refId: osInstance?.id || (ipServices.length ? ipServices[0].osInstanceId : null),
-        occupied: !!osInstance || ipServices.length > 0,
+        refId: osInstance?.id || (hasService ? ipServices[0].osInstanceId : null),
+        occupied: isOs || hasService,
         entity: osInstance || null,
-        services: ipServices,
-        typeName: osInstance ? (osInstance.type || 'OS') : (ipServices.length ? '服务' : '空闲')
+        services: processedServices,
+        typeName: isOs ? (osInstance.type || 'OS') : (hasService ? '服务' : '空闲'),
+        tagType: tagType
       })
     }
 
@@ -289,16 +317,6 @@ const toggleExpandAll = () => {
   } else {
     expandedGroups.value = store.state.ipGroups.map(g => g.id)
   }
-}
-
-const getIpTypeTag = (ip) => {
-  if (ip.type === 'os_instance' && ip.osType) {
-    // Map OS type to tag type
-    const osTypeMap = { 'PVE': 'warning', 'LXC': 'info', 'VM': '', 'Linux': 'success', 'Windows': 'danger' }
-    return osTypeMap[ip.osType] || ''
-  }
-  const map = { computer: '', os_instance: 'success', service: 'warning', service_only: 'warning', idle: 'info' }
-  return map[ip.type] || 'info'
 }
 
 const navigateToIp = (ip) => {
@@ -388,8 +406,8 @@ const resetForm = () => {
   }
 }
 
-// Expand all by default
-expandedGroups.value = store.state.ipGroups.map(g => g.id)
+// 默认只展开第一个分组，避免大量 IP 同时渲染导致卡顿
+expandedGroups.value = store.state.ipGroups.length > 0 ? [store.state.ipGroups[0].id] : []
 </script>
 
 <style scoped>
