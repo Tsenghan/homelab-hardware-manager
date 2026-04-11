@@ -4,7 +4,7 @@
 
 [![Stars](https://img.shields.io/github/stars/Tsenghan/homelab-hardware-manager?style=flat-square&logo=github)](https://github.com/Tsenghan/homelab-hardware-manager)
 [![License](https://img.shields.io/github/license/Tsenghan/homelab-hardware-manager?style=flat-square)](https://github.com/Tsenghan/homelab-hardware-manager/blob/main/LICENSE)
-[![Docker](https://img.shields.io/docker/pulls/tsenghan/homelab-hardware-manager?style=flat-square&logo=docker)](https://github.com/Tsenghan/homelab-hardware-manager)
+[![Docker](https://img.shields.io/docker/pulls/tsenghan/homelab-manager?style=flat-square&logo=docker)](https://hub.docker.com/r/tsenghan/homelab-manager)
 
 *A hardware and virtualization asset management system designed for personal HomeLab environments.*
 
@@ -20,46 +20,46 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Physical Host Management** | Add, edit, and delete physical servers with location and notes |
-| **Hardware Pool** | Manage unassigned CPUs, RAM modules, and disks; support batch entry and cloning |
-| **OS Instances** | Support PVE/ESXi/Linux/Windows/LXC, nested VM/LXC display |
-| **Services** | Manage ports, protocols, and service URLs with one-click access |
+| **Physical Host Management** | Add, edit, delete physical servers with location and notes |
+| **Hardware Pool** | Unified management of unassigned CPU, RAM, disk; support batch entry |
+| **OS Instances** | Support PVE/ESXi/Linux/Windows/LXC with nested VM/LXC display |
+| **Services** | Manage ports, protocols, service URLs with one-click access |
 
 ### Visualization & Interaction
 
 | Feature | Description |
 |---------|-------------|
-| **Topology View** | Tree structure: `Physical Host → OS Instance → Service` |
+| **Topology View** | Tree structure: `Physical Host → OS Instance → VM/LXC → Service` |
 | **Global Search** | Cross-layer fuzzy search — find by service name, IP, hardware model, etc. |
 | **Drawer Panel** | Slide-out detail panel on node click, never loses context |
-| **IP Network View** | IP allocation overview by group with address range management |
-| **Settings** | Customize OS type names and protocol color schemes |
+| **IP Network View** | IP allocation overview by group |
+| **Settings** | Customize OS type, protocol, and service type color schemes |
 
-### Data Model (3-Layer Architecture)
+### Data Model
 
 ```
-L1 Hardware       → Computer / CPU / RAM / Disk
-L2 System         → OsInstance (supports nested VM/LXC)
-L3 Application    → Service
+L1 Hardware    → Computer / CPU / RAM / Disk
+L2 System      → OsInstance (supports nested VM/LXC)
+L3 Application → Service
 ```
 
 ---
 
-## Tech Stack
+## Screenshots
 
-| Layer | Technology |
-|-------|------------|
-| Frontend Framework | Vue 3 + Composition API + Vite |
-| UI Components | Element Plus |
-| Backend Framework | Python Flask + Flask-SQLAlchemy |
-| Database | SQLite |
-| Deployment | Docker + Docker Compose |
+| Topology View | IP List |
+|:---:|:---:|
+| ![Topology View](screenshots/PixPin_2026-04-11_22-06-59.png) | ![IP List](screenshots/PixPin_2026-04-11_22-07-24.png) |
+
+| Services | Settings |
+|:---:|:---:|
+| ![Services](screenshots/PixPin_2026-04-11_22-08-21.png) | ![Settings](screenshots/PixPin_2026-04-11_22-08-42.png) |
 
 ---
 
 ## Quick Start
 
-### Option 1: Docker (Recommended for Production)
+### Docker (Recommended)
 
 ```bash
 git clone https://github.com/Tsenghan/homelab-hardware-manager.git
@@ -69,68 +69,43 @@ docker-compose up -d
 
 Visit **http://your-server:5000**
 
----
+> Sample data is created automatically on first startup.
 
-### Option 2: Local Development
+### Local Development
 
 **Frontend**
-
 ```bash
 cd frontend
-npm install
+npm install --legacy-peer-deps
 npm run dev
 ```
 
-**Backend** (in a separate terminal)
-
+**Backend** (separate terminal)
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
 ```
 
-Visit **http://localhost:5173**, Vite proxies `/api` requests to Flask automatically.
+Visit **http://localhost:5173**, Vite proxies `/api` to Flask.
 
 ---
 
 ## Deployment
 
-### Docker Compose (Production)
+### Docker Compose
 
 ```bash
-# Start
-docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-```
-
-### Manual Docker
-
-```bash
-docker build -t homelab-manager .
-docker run -d --name homelab -p 5000:5000 homelab-manager
+docker-compose up -d      # Start
+docker-compose pull       # Pull latest
+docker-compose up -d      # Update and restart
+docker-compose logs -f    # View logs
+docker-compose down       # Stop
 ```
 
 ### Data Persistence
 
-Database is stored in Docker volume `homelab-data`:
-
-```bash
-docker volume inspect homelab-hardware-manager_homelab-data
-```
-
-### Seed Data
-
-On first startup, the system automatically creates database tables and populates sample data (example host PVE-Server-1, IP groups, OS types, protocol configs, etc.).
-
-To manually re-initialize, simply restart the container — `seed_data_if_empty()` will run automatically.
+Database file is stored in `data/` directory (host mount). Delete this directory and restart to reinitialize.
 
 ---
 
@@ -143,27 +118,26 @@ homelab-hardware-manager/
 │   │   ├── views/          # Page components
 │   │   ├── components/      # Shared components
 │   │   │   └── details/     # Detail drawer components
-│   │   ├── stores/          # State management
-│   │   └── api/             # API wrappers
+│   │   ├── stores/         # State management
+│   │   ├── api/            # API wrappers
+│   │   └── router/         # Router config
 │   ├── public/
-│   ├── index.html
-│   ├── package.json
 │   └── vite.config.js
 ├── backend/
 │   ├── routes/             # API routes
 │   │   ├── computers.py
 │   │   ├── os_instances.py
 │   │   ├── services.py
-│   │   ├── search.py
 │   │   ├── ip_groups.py
+│   │   ├── search.py
 │   │   └── type_configs.py
 │   ├── main.py             # Flask entry point
 │   ├── models.py           # Data models
+│   ├── init_db.py          # Database initialization
 │   └── requirements.txt
+├── screenshots/            # UI screenshots
 ├── docker-compose.yml
-├── Dockerfile
-├── wsgi.py
-└── nginx.conf              # Optional: Nginx reverse proxy config
+└── nginx.conf              # Optional Nginx reverse proxy config
 ```
 
 ---
@@ -172,20 +146,37 @@ homelab-hardware-manager/
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/computers` | List all hosts |
-| POST | `/api/computers` | Create a host |
-| PUT | `/api/computers/<id>` | Update a host |
-| DELETE | `/api/computers/<id>` | Delete a host |
+| GET | `/api/computers` | List hosts |
+| POST | `/api/computers` | Create host |
+| PUT | `/api/computers/<id>` | Update host |
+| DELETE | `/api/computers/<id>` | Delete host |
 | GET | `/api/os-instances` | List OS instances |
-| POST | `/api/os-instances` | Create an OS instance |
+| POST | `/api/os-instances` | Create OS instance |
+| DELETE | `/api/os-instances/<id>` | Delete OS instance |
 | GET | `/api/services` | List services |
-| POST | `/api/services` | Create a service |
-| GET | `/api/storage` | List storage pools |
-| GET | `/api/search?q=` | Global search |
+| POST | `/api/services` | Create service |
+| PUT | `/api/services/<id>` | Update service |
+| DELETE | `/api/services/<id>` | Delete service |
 | GET | `/api/ip-groups` | List IP groups |
-| POST | `/api/ip-groups` | Create an IP group |
-| GET | `/api/type-configs` | List type configs (OS types / protocols) |
-| POST | `/api/type-configs` | Create a type config |
+| POST | `/api/ip-groups` | Create IP group |
+| PUT | `/api/ip-groups/<id>` | Update IP group |
+| DELETE | `/api/ip-groups/<id>` | Delete IP group |
+| GET | `/api/type-configs` | List type configs |
+| POST | `/api/type-configs` | Create type config |
+| GET | `/api/search?q=` | Global search |
+| POST | `/api/import` | Import data |
+| GET | `/api/export` | Export data |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Vue 3 + Composition API + Vite + Element Plus + icon-park |
+| Backend | Python Flask + Flask-SQLAlchemy |
+| Database | SQLite |
+| Deployment | Docker + Docker Compose |
 
 ---
 
@@ -197,67 +188,24 @@ homelab-hardware-manager/
 - Python >= 3.10
 - Docker & Docker Compose (optional)
 
-### Development Workflow
+### Development
 
-1. **Fork & Clone**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/homelab-hardware-manager.git
-   cd homelab-hardware-manager
-   ```
-
-2. **Install Frontend Dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-3. **Start Backend Dev Server**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   python main.py
-   ```
-
-4. **Start Frontend Dev Server**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-5. **Commit Convention**
-
-   - `feat:` New feature
-   - `fix:` Bug fix
-   - `refactor:` Refactoring
-   - `style:` Style/format adjustment
-   - `docs:` Documentation change
-
-   ```bash
-   git checkout -b feat/your-feature-name
-   git commit -m "feat: add new feature"
-   git push origin feat/your-feature-name
-   ```
-
-6. **Open a Pull Request**
+1. Fork & Clone
+2. Install deps: `cd frontend && npm install --legacy-peer-deps`
+3. Start backend: `cd backend && pip install -r requirements.txt && python main.py`
+4. Start frontend: `cd frontend && npm run dev`
+5. Commit convention: `feat:` `fix:` `refactor:` `style:` `docs:`
 
 ---
 
 ## License
 
-This project is open source under the [MIT License](LICENSE).
-
----
-
-## Please Star ⭐
-
-If this project is helpful to you, please give it a Star! Your support drives my motivation to keep improving.
-
-[![Star](https://img.shields.io/github/stars/Tsenghan/homelab-hardware-manager?style=social&logo=github)](https://github.com/Tsenghan/homelab-hardware-manager)
+[MIT License](LICENSE)
 
 ---
 
 ## About AI
 
-This project was built entirely from scratch with AI assistance — code, architecture, and documentation all created with the help of AI.
+This project was built from scratch with AI assistance.
 
 Special thanks to **Claude Code (Anthropic)** and **MiniMax M2.7**.
