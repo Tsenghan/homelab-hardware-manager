@@ -19,7 +19,7 @@
         <template #empty>
            <el-empty description="暂无服务" />
         </template>
-        <el-table-column label="服务名" min-width="150">
+        <el-table-column label="服务名" min-width="120">
           <template #header>
             <span class="th-sortable" @click="handleSort('name')">
               服务名 <span class="th-sort-icon">{{ sortState.prop === 'name' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
@@ -42,7 +42,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="协议" width="100" align="center">
+        <el-table-column label="协议" width="110" align="center">
           <template #header>
             <span class="th-sortable" @click="handleSort('protocol')">
               协议 <span class="th-sort-icon">{{ sortState.prop === 'protocol' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
@@ -54,7 +54,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="地址" min-width="180">
+        <el-table-column label="地址" min-width="130">
           <template #header>
             <span class="th-sortable" @click="handleSort('ip_address')">
               地址 <span class="th-sort-icon">{{ sortState.prop === 'ip_address' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
@@ -64,7 +64,7 @@
             <span class="mono">{{ row.ip_address }}:{{ row.port }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="宿主系统" min-width="200">
+        <el-table-column label="宿主系统" min-width="120">
           <template #header>
             <span class="th-sortable" @click="handleSort('osInstanceId')">
               宿主系统 <span class="th-sort-icon">{{ sortState.prop === 'osInstanceId' ? (sortState.order === 'asc' ? '↑' : '↓') : '' }}</span>
