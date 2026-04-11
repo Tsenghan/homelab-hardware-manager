@@ -85,7 +85,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-访问 **http://localhost:5173**，Vite 自动代理 `/api` 到 Flask。
+访问 http://localhost:5173，Vite 自动代理 `/api` 到 Flask。
 
 ---
 
