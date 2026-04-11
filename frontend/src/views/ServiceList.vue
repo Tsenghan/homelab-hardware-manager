@@ -36,7 +36,7 @@
             </span>
           </template>
           <template #default="{ row }">
-            <el-tag v-if="row.type" size="small" :type="getServiceTypeTagType(row.type)">
+            <el-tag v-if="row.type" size="small" :type="serviceTypeColorMap[row.type] || 'info'">
               {{ row.type }}
             </el-tag>
             <span v-else>-</span>
@@ -71,7 +71,7 @@
             </span>
           </template>
           <template #default="{ row }">
-            {{ getOsInstanceName(row.osInstanceId) }}
+            {{ osInstanceNameCache[row.osInstanceId] || '未知' }}
           </template>
         </el-table-column>
         <el-table-column label="描述" min-width="150">
@@ -175,17 +175,31 @@ const serviceTypeOptions = computed(() => {
   return Array.isArray(configs) ? configs : (configs.value || [])
 })
 
-const getServiceTypeTagType = (typeName) => {
-  const config = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)
-  if (config) {
-    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
-    return colorMap[config.color] || ''
-  }
-  return 'info'
-}
+// 服务类型颜色映射，O(1) 查找
+const serviceTypeColorMap = computed(() => {
+  const map = {}
+  const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
+  const configs = store.state.typeConfigs || []
+  configs.forEach(t => {
+    if (t.category === 'service_type') {
+      map[t.name] = colorMap[t.color] || 'info'
+    }
+  })
+  return map
+})
+
+// 宿主系统名称缓存，用普通对象避免响应式开销
+const osInstanceNameCache = computed(() => {
+  const cache = {}
+  store.state.allOsInstances.forEach(os => {
+    cache[os.id] = os.name || '未知'
+  })
+  return cache
+})
 
 const filteredServices = computed(() => {
-  let result = store.state.services
+  let result = store.state.services || []
+  const osCache = osInstanceNameCache.value
 
   // 过滤
   if (filterText.value) {
@@ -196,39 +210,38 @@ const filteredServices = computed(() => {
     )
   }
 
-  // 排序
+  // 排序：预处理 sortValue，避免在比较器中重复计算
   const { prop, order } = sortState.value
   if (prop && order) {
-    result = [...result].sort((a, b) => {
-      let aVal, bVal
-      if (prop === 'ip_address') {
-        // IP 地址排序，只看最后一节
-        aVal = a.ip_address ? parseInt(a.ip_address.split('.').pop()) : 0
-        bVal = b.ip_address ? parseInt(b.ip_address.split('.').pop()) : 0
-      } else if (prop === 'osInstanceId') {
-        // 宿主系统排序用名称
-        aVal = getOsInstanceName(a.osInstanceId) || ''
-        bVal = getOsInstanceName(b.osInstanceId) || ''
-      } else {
-        aVal = a[prop] || ''
-        bVal = b[prop] || ''
+    const isAsc = order === 'asc'
+
+    const mapped = result.map(item => {
+      let sortValue = item[prop] || ''
+
+      if (prop === 'osInstanceId') {
+        sortValue = osCache[item.osInstanceId] || ''
+      } else if (prop === 'ip_address') {
+        sortValue = item.ip_address ? Number(item.ip_address.slice(item.ip_address.lastIndexOf('.') + 1)) : 0
       }
-      if (typeof aVal === 'string') {
-        aVal = aVal.toLowerCase()
-        bVal = bVal.toLowerCase()
+
+      if (typeof sortValue === 'string') {
+        sortValue = sortValue.toLowerCase()
       }
-      if (aVal < bVal) return order === 'asc' ? -1 : 1
-      if (aVal > bVal) return order === 'asc' ? 1 : -1
+
+      return { original: item, sortValue }
+    })
+
+    mapped.sort((a, b) => {
+      if (a.sortValue < b.sortValue) return isAsc ? -1 : 1
+      if (a.sortValue > b.sortValue) return isAsc ? 1 : -1
       return 0
     })
+
+    result = mapped.map(item => item.original)
   }
 
   return result
 })
-
-const getOsInstanceName = (id) => {
-  return store.getOsInstanceName(id)
-}
 
 const handleRowClick = (row) => {
   openDrawer('service', row)

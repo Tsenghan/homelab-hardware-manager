@@ -191,49 +191,52 @@ const ipInRange = (ip, start, end) => {
 }
 
 const ipGroups = computed(() => {
+  // 预构建查找表，将 O(n) 查找变为 O(1)
+  const osInstanceByIp = new Map()
+  store.state.allOsInstances.forEach(os => {
+    if (os.ipAddress) {
+      osInstanceByIp.set(os.ipAddress, os)
+    }
+  })
+
+  const servicesByIp = new Map()
+  store.state.services.forEach(s => {
+    if (s.ip_address) {
+      if (!servicesByIp.has(s.ip_address)) {
+        servicesByIp.set(s.ip_address, [])
+      }
+      servicesByIp.get(s.ip_address).push(s)
+    }
+  })
+
   return store.state.ipGroups.map(group => {
     const ips = []
     const startNum = ipToNum(group.startIp)
     const endNum = ipToNum(group.endIp)
 
-    // Collect all occupied IPs from osInstances
-    const occupiedIps = []
-    store.state.allOsInstances.forEach(os => {
-      if (os.ipAddress && ipInRange(os.ipAddress, group.startIp, group.endIp)) {
-        occupiedIps.push({
-          ip: os.ipAddress,
-          hostName: os.name,
-          type: 'os_instance',
-          osType: os.type,
-          refId: os.id,
-          entity: os
-        })
-      }
-    })
-
     // Generate all IPs in range
     for (let i = startNum; i <= endNum; i++) {
       const ipStr = group.startIp.replace(/\d+$/, i)
-      const record = occupiedIps.find(r => r.ip === ipStr)
-      const ipServices = store.state.services.filter(s => s.ip_address === ipStr)
+      const osInstance = osInstanceByIp.get(ipStr)
+      const ipServices = servicesByIp.get(ipStr) || []
 
-      let hostName = record?.hostName || ''
+      let hostName = osInstance?.name || ''
       if (!hostName && ipServices.length > 0) {
         const firstSvc = ipServices[0]
-        const hostOs = store.state.allOsInstances.find(os => os.id === firstSvc.osInstanceId)
+        const hostOs = osInstanceByIp.get(firstSvc.ip_address) || store.state.allOsInstances.find(os => os.id === firstSvc.osInstanceId)
         hostName = hostOs?.computerName || hostOs?.name || firstSvc.name || ''
       }
 
       ips.push({
         ip: ipStr,
         hostName: hostName,
-        type: record?.type || (ipServices.length ? 'service_only' : 'idle'),
-        osType: record?.osType || '',
-        refId: record?.refId || (ipServices.length ? ipServices[0].osInstanceId : null),
-        occupied: !!record || ipServices.length > 0,
-        entity: record?.entity || null,
+        type: osInstance ? 'os_instance' : (ipServices.length ? 'service_only' : 'idle'),
+        osType: osInstance?.type || '',
+        refId: osInstance?.id || (ipServices.length ? ipServices[0].osInstanceId : null),
+        occupied: !!osInstance || ipServices.length > 0,
+        entity: osInstance || null,
         services: ipServices,
-        typeName: record ? (record.osType || 'OS') : (ipServices.length ? '服务' : '空闲')
+        typeName: osInstance ? (osInstance.type || 'OS') : (ipServices.length ? '服务' : '空闲')
       })
     }
 
