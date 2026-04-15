@@ -39,7 +39,7 @@
         </div>
         <div class="info-row">
           <span class="label">容量</span>
-          <span class="value">{{ data.capacity_gb }} GB</span>
+          <span class="value">{{ data.capacity }} GB</span>
         </div>
         <div class="info-row">
           <span class="label">类型</span>
@@ -70,7 +70,7 @@
         </div>
         <div class="info-row">
           <span class="label">容量</span>
-          <span class="value">{{ data.capacity_gb }} GB</span>
+          <span class="value">{{ data.capacity }} GB</span>
         </div>
         <div class="info-row">
           <span class="label">接口</span>

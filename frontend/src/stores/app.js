@@ -812,9 +812,11 @@ export function createAppStore() {
                   await api.createOsInstance(computer.id, {
                     name: os.name,
                     os_type: os.type,
-                    parent_os_id: null,
+                    parent_os_id: os.parentOsId,
                     ip_address: os.ipAddress,
                     mac_address: os.macAddress,
+                    port: os.port,
+                    pcie_passthrough: os.pciePassthrough,
                     notes: os.notes
                   })
                 } else {
