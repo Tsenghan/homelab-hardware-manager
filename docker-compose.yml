@@ -1,6 +1,6 @@
 services:
   homelab:
-    image: tsenghan/homelab-manager:1.0.0
+    image: tsenghan/homelab-manager:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -9,7 +9,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
       interval: 30s
       timeout: 10s
       retries: 3
