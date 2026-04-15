@@ -59,9 +59,22 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        run_migrations()
         seed_data_if_empty()
 
     return app
+
+
+def run_migrations():
+    """检查并添加新字段到已有表"""
+    from models import Disk
+    from sqlalchemy import inspect
+    inspector = inspect(db.engine)
+    columns = [c['name'] for c in inspector.get_columns('disks')]
+    if 'mount_method' not in columns:
+        db.session.execute(db.text('ALTER TABLE disks ADD COLUMN mount_method VARCHAR(50)'))
+        db.session.commit()
+        print('Migration: added mount_method column to disks table.')
 
 
 def seed_data_if_empty():
