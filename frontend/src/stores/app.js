@@ -24,11 +24,11 @@ export function createAppStore() {
   )
 
   const totalRam = computed(() =>
-    state.allHardware.rams.reduce((sum, r) => sum + (r.capacity_gb || 0), 0)
+    state.allHardware.rams.reduce((sum, r) => sum + (r.capacity || 0), 0)
   )
 
   const totalDisk = computed(() =>
-    state.allHardware.disks.reduce((sum, d) => sum + (d.capacity_gb || 0), 0)
+    state.allHardware.disks.reduce((sum, d) => sum + (d.capacity || 0), 0)
   )
 
   const totalVms = computed(() =>
@@ -344,6 +344,8 @@ export function createAppStore() {
         model: form.model,
         capacity_gb: form.capacity,
         ram_type: form.type,
+        purchase_date: form.purchaseDate,
+        remarks: form.remarks,
         computer_id: null
       }
       const res = await api.createRam(payload)
@@ -353,7 +355,9 @@ export function createAppStore() {
         brand: res.brand,
         model: res.model,
         capacity: res.capacity_gb,
-        type: res.ram_type
+        type: res.ram_type,
+        purchaseDate: res.purchase_date,
+        remarks: res.remarks
       })
     } else {
       payload = {
@@ -365,6 +369,7 @@ export function createAppStore() {
         mount_method: form.mountMethod,
         purpose: form.purpose,
         is_boot_disk: form.isBootDisk,
+        purchase_date: form.purchaseDate,
         computer_id: null
       }
       const res = await api.createDisk(payload)
@@ -378,7 +383,8 @@ export function createAppStore() {
         fileSystem: res.file_system,
         mountMethod: res.mount_method,
         purpose: res.purpose,
-        isBootDisk: res.is_boot_disk
+        isBootDisk: res.is_boot_disk,
+        purchaseDate: res.purchase_date
       })
     }
   }
@@ -717,6 +723,7 @@ export function createAppStore() {
                     model: cpu.model,
                     cores: cpu.cores,
                     clockSpeed: cpu.clockSpeed,
+                    purchaseDate: cpu.purchaseDate,
                     computer_id: computerId || null,
                     remarks: cpu.remarks
                   })
@@ -742,6 +749,7 @@ export function createAppStore() {
                     model: ram.model,
                     capacity_gb: ram.capacity,
                     ram_type: ram.type,
+                    purchase_date: ram.purchaseDate,
                     computer_id: computerId || null,
                     remarks: ram.remarks
                   })
@@ -768,8 +776,10 @@ export function createAppStore() {
                     capacity_gb: disk.capacity,
                     interface: disk.interface,
                     file_system: disk.fileSystem,
+                    mount_method: disk.mountMethod,
                     purpose: disk.purpose,
                     is_boot_disk: disk.isBootDisk,
+                    purchase_date: disk.purchaseDate,
                     computer_id: computerId || null,
                     remarks: disk.remarks
                   })
