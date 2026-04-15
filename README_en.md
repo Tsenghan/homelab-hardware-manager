@@ -8,7 +8,7 @@
 
 *A hardware and virtualization asset management system designed for personal HomeLab environments.*
 
-**[中文](README.md) | English**
+**[中文](README.md) | [English](README_en.md)**
 
 </div>
 
