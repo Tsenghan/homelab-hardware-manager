@@ -49,7 +49,7 @@
           <div v-for="os in getComputerOsInstances(data.id)" :key="os.id" class="hardware-item">
             <div class="item-content" @click="selectNode('os_instance', os)">
               <div class="item-name">
-                <el-tag size="small" :type="getOsTypeTagType(os.type)">
+                <el-tag size="small" :style="getOsTypeStyle(os.type)">
                   {{ os.parentOsId ? os.type : '底层' }}
                 </el-tag>
                 {{ os.name }}
@@ -69,7 +69,7 @@
         <div class="detail-container">
           <div class="info-section">
             <div class="info-row"><span class="label">名称</span><span class="value">{{ data.name }}</span></div>
-            <div class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
+            <div class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small" :style="getOsTypeStyle(data.type)">{{ data.type }}</el-tag></span></div>
             <div class="info-row"><span class="label">IP</span><span class="value ip">{{ data.ipAddress || '未分配' }}</span></div>
             <div class="info-row"><span class="label">宿主</span><span class="value">{{ data.computerName }}</span></div>
             <div v-if="data.notes" class="info-row"><span class="label">备注</span><span class="value">{{ data.notes }}</span></div>
@@ -93,7 +93,7 @@
         <div class="detail-container">
           <div class="info-section">
             <div class="info-row"><span class="label">服务名</span><span class="value">{{ data.name }}</span></div>
-            <div v-if="data.type" class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small">{{ data.type }}</el-tag></span></div>
+            <div v-if="data.type" class="info-row"><span class="label">类型</span><span class="value"><el-tag size="small" :style="getServiceTypeStyle(data.type)">{{ data.type }}</el-tag></span></div>
             <div class="info-row"><span class="label">协议</span><span class="value"><el-tag size="small">{{ data.protocol?.toUpperCase() }}</el-tag></span></div>
             <div class="info-row"><span class="label">地址</span><span class="value mono">{{ data.ip_address }}:{{ data.port }}</span></div>
             <div class="info-row"><span class="label">宿主</span><span class="value">{{ getOsInstanceName(data.osInstanceId) }}</span></div>
@@ -152,14 +152,24 @@ const getComputerOsInstances = (cid) => store.getComputerOsInstances(cid)
 const getOsServices = (osId) => store.getOsServices(osId)
 const getOsInstanceName = (id) => store.getOsInstanceName(id)
 
-// 获取 OS 类型标签显示
-const getOsTypeTagType = (typeName) => {
-  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
-  if (config?.color) {
-    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
-    return colorMap[config.color] || 'warning'
+// 获取 OS 类型标签样式
+const getOsTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)?.color || '#f59e0b'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
   }
-  return 'warning'
+}
+
+// 获取服务类型标签样式
+const getServiceTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)?.color || '#909399'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
 }
 
 const selectNode = (type, data) => {

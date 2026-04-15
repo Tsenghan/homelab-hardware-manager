@@ -54,8 +54,8 @@
         <div class="hardware-section">
           <div v-for="vm in osInstances" :key="vm.id" class="hardware-item" @click="$emit('select', 'os_instance', vm)">
             <div class="item-name">
-              <el-tag size="small" :type="vm.parent_os_id ? 'warning' : 'success'">
-                {{ vm.parent_os_id ? 'VM' : 'Host' }}
+              <el-tag size="small" :style="getOsTypeStyle(vm.type)">
+                {{ vm.type }}
               </el-tag>
               {{ vm.name }}
             </div>
@@ -72,6 +72,18 @@
 import { ref, computed, inject } from 'vue'
 import { Cpu as EpCpu, Histogram as EpHistogram, Folder as EpFolder } from '@element-plus/icons-vue'
 import { Cpu, MemoryOne, HardDisk } from '@icon-park/vue-next'
+import { useAppStore } from '../../stores/app'
+
+const store = useAppStore()
+
+const getOsTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)?.color || '#409EFF'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
+}
 
 const props = defineProps({
   data: Object

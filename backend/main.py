@@ -79,11 +79,13 @@ def run_migrations():
 
 def seed_data_if_empty():
     """如果数据库为空，加载完整的示例数据"""
-    from models import Computer
-    if Computer.query.first() is None:
-        from init_db import load_example_data
-        load_example_data()
-        print('Example data loaded.')
+    from models import Computer, TypeConfig
+    # 同时检查多个关键表，确保数据完整才跳过加载
+    if Computer.query.first() is not None and TypeConfig.query.first() is not None:
+        return
+    from init_db import load_example_data
+    load_example_data()
+    print('Example data loaded.')
 
 
 if __name__ == '__main__':

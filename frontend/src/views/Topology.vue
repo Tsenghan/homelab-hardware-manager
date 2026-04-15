@@ -46,7 +46,7 @@
               <div class="node-info">
                 <div class="node-name">
                   {{ os.name }}
-                  <el-tag size="small" :type="getOsTypeTagType(os.type)">
+                  <el-tag size="small" :style="getOsTypeStyle(os.type)">
                     {{ os.parentOsId ? os.type : '底层' }}
                   </el-tag>
                   <span v-if="os.notes" class="node-notes">{{ os.notes }}</span>
@@ -74,7 +74,7 @@
                   <div class="node-info">
                     <div class="node-name">
                       {{ childOs.name }}
-                      <el-tag size="small" :type="getOsTypeTagType(childOs.type)">{{ childOs.type }}</el-tag>
+                      <el-tag size="small" :style="getOsTypeStyle(childOs.type)">{{ childOs.type }}</el-tag>
                       <span v-if="childOs.notes" class="node-notes">{{ childOs.notes }}</span>
                     </div>
                     <div class="node-meta">{{ childOs.ipAddress || '无IP' }}</div>
@@ -92,7 +92,7 @@
                     <div class="node-info">
                       <div class="node-name">
                         {{ svc.name }}
-                        <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
+                        <el-tag v-if="svc.type" size="small" :style="getServiceTypeStyle(svc.type)">
                           {{ svc.type }}
                         </el-tag>
                         <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
@@ -119,7 +119,7 @@
                   <div class="node-info">
                     <div class="node-name">
                       {{ svc.name }}
-                      <el-tag v-if="svc.type" size="small" :type="getServiceTypeTagType(svc.type)">
+                      <el-tag v-if="svc.type" size="small" :style="getServiceTypeStyle(svc.type)">
                         {{ svc.type }}
                       </el-tag>
                       <span v-if="svc.description" class="node-notes">{{ svc.description }}</span>
@@ -156,30 +156,24 @@ const expandedIds = ref([])
 const selectedId = ref(null)
 const selectedType = ref(null)
 
-// 获取 OS 类型颜色
-const getOsTypeColor = (typeName) => {
-  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
-  return config?.color || '#f59e0b' // 默认黄色
+// 获取 OS 类型样式
+const getOsTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)?.color || '#f59e0b'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
 }
 
-// 获取 OS 类型标签显示
-const getOsTypeTagType = (typeName) => {
-  const config = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)
-  if (config?.color) {
-    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
-    return colorMap[config.color] || 'warning'
+// 获取服务类型样式
+const getServiceTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)?.color || '#909399'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
   }
-  return 'warning'
-}
-
-// 获取服务类型标签显示
-const getServiceTypeTagType = (typeName) => {
-  const config = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)
-  if (config?.color) {
-    const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
-    return colorMap[config.color] || 'info'
-  }
-  return 'info'
 }
 
 // 获取直接子 OS 实例（顶级，没有父）

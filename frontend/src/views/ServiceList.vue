@@ -35,7 +35,7 @@
             </span>
           </template>
           <template #default="{ row }">
-            <el-tag v-if="row.type" size="small" :type="serviceTypeColorMap[row.type] || 'info'">
+            <el-tag v-if="row.type" size="small" :style="getServiceTypeStyle(row.type)">
               {{ row.type }}
             </el-tag>
             <span v-else>-</span>
@@ -48,7 +48,7 @@
             </span>
           </template>
           <template #default="{ row }">
-            <el-tag size="small" :type="row.protocol === 'https' ? 'success' : 'info'">
+            <el-tag size="small" :style="getProtocolStyle(row.protocol)">
               {{ row.protocol?.toUpperCase() }}
             </el-tag>
           </template>
@@ -174,18 +174,25 @@ const serviceTypeOptions = computed(() => {
   return Array.isArray(configs) ? configs : (configs.value || [])
 })
 
-// 服务类型颜色映射，O(1) 查找
-const serviceTypeColorMap = computed(() => {
-  const map = {}
-  const colorMap = { '#67C23A': 'success', '#409EFF': '', '#E6A23C': 'warning', '#F56C6C': 'danger', '#909399': 'info' }
-  const configs = store.state.typeConfigs || []
-  configs.forEach(t => {
-    if (t.category === 'service_type') {
-      map[t.name] = colorMap[t.color] || 'info'
-    }
-  })
-  return map
-})
+// 服务类型样式
+const getServiceTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'service_type' && t.name === typeName)?.color || '#909399'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
+}
+
+// 服务协议样式
+const getProtocolStyle = (protocol) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'protocol' && t.name === protocol)?.color || '#409EFF'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
+}
 
 // 宿主系统名称缓存，用普通对象避免响应式开销
 const osInstanceNameCache = computed(() => {

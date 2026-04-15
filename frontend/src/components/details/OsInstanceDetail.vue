@@ -10,7 +10,7 @@
           <div class="info-row">
             <span class="label">类型</span>
             <span class="value">
-              <el-tag size="small">{{ data.type }}</el-tag>
+              <el-tag size="small" :style="getOsTypeStyle(data.type)">{{ data.type }}</el-tag>
             </span>
           </div>
           <div class="info-row">
@@ -53,7 +53,7 @@
       <el-tab-pane label="子虚拟机" name="children">
         <div class="vm-list">
           <div v-for="child in childVms" :key="child.id" class="vm-item">
-            <el-tag size="small" :type="child.type === 'LXC' ? 'warning' : ''">
+            <el-tag size="small" :style="getOsTypeStyle(child.type)">{{ child.type }}</el-tag>
               {{ child.type }}
             </el-tag>
             <span class="vm-name">{{ child.name }}</span>
@@ -69,6 +69,18 @@
 <script setup>
 import { ref } from 'vue'
 import { Folder, Cpu, Connection } from '@element-plus/icons-vue'
+import { useAppStore } from '../../stores/app'
+
+const store = useAppStore()
+
+const getOsTypeStyle = (typeName) => {
+  const color = store.state.typeConfigs.find(t => t.category === 'os_type' && t.name === typeName)?.color || '#409EFF'
+  return {
+    backgroundColor: `${color}15`,
+    borderColor: color,
+    color: color
+  }
+}
 
 const props = defineProps({
   data: Object

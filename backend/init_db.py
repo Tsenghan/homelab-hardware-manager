@@ -39,76 +39,53 @@ def init_database():
         print("Example data loaded successfully.")
 
 
+def get_or_create_type_config(category, name, color=None):
+    """如果同名配置已存在则返回，否则创建新的"""
+    existing = TypeConfig.query.filter_by(category=category, name=name).first()
+    if existing:
+        return existing
+    cfg = TypeConfig(category=category, name=name, color=color or '#409EFF')
+    db.session.add(cfg)
+    return cfg
+
+
 def load_example_data():
     """Load comprehensive example data into the database."""
 
     # ==================== Type Configs ====================
     # OS Types
-    os_types = [
-        TypeConfig(category='os_type', name='PVE', color='#E6A23C'),
-        TypeConfig(category='os_type', name='LXC', color='#909399'),
-        TypeConfig(category='os_type', name='VM', color='#409EFF'),
-        TypeConfig(category='os_type', name='Linux', color='#67C23A'),
-        TypeConfig(category='os_type', name='Windows', color='#F56C6C'),
-        TypeConfig(category='os_type', name='Docker', color='#2496ED'),
-    ]
-    db.session.add_all(os_types)
+    for name, color in [
+        ('PVE', '#E6A23C'), ('LXC', '#909399'), ('VM', '#409EFF'),
+        ('Linux', '#67C23A'), ('Windows', '#F56C6C'), ('Docker', '#2496ED'),
+    ]:
+        get_or_create_type_config('os_type', name, color)
 
     # Protocols
-    protocols = [
-        TypeConfig(category='protocol', name='http', color='#409EFF'),
-        TypeConfig(category='protocol', name='https', color='#67C23A'),
-        TypeConfig(category='protocol', name='ssh', color='#909399'),
-        TypeConfig(category='protocol', name='tcp', color='#E6A23C'),
-        TypeConfig(category='protocol', name='udp', color='#F56C6C'),
-        TypeConfig(category='protocol', name='rdp', color='#0078D4'),
-        TypeConfig(category='protocol', name='vnc', color='#44B78B'),
-    ]
-    db.session.add_all(protocols)
+    for name, color in [
+        ('http', '#409EFF'), ('https', '#67C23A'), ('ssh', '#909399'),
+        ('tcp', '#E6A23C'), ('udp', '#F56C6C'), ('rdp', '#0078D4'), ('vnc', '#44B78B'),
+    ]:
+        get_or_create_type_config('protocol', name, color)
 
     # Service Types
-    service_types = [
-        TypeConfig(category='service_type', name='Web服务', color='#409EFF'),
-        TypeConfig(category='service_type', name='存储服务', color='#67C23A'),
-        TypeConfig(category='service_type', name='智能家居', color='#E6A23C'),
-        TypeConfig(category='service_type', name='网络工具', color='#909399'),
-        TypeConfig(category='service_type', name='开发工具', color='#F56C6C'),
-        TypeConfig(category='service_type', name='监控系统', color='#2496ED'),
-        TypeConfig(category='service_type', name='媒体服务', color='#9012FE'),
-        TypeConfig(category='service_type', name='安全工具', color='#F56C6C'),
-    ]
-    db.session.add_all(service_types)
+    for name, color in [
+        ('Web服务', '#409EFF'), ('存储服务', '#67C23A'), ('智能家居', '#E6A23C'),
+        ('网络工具', '#909399'), ('开发工具', '#F56C6C'), ('监控系统', '#2496ED'),
+        ('媒体服务', '#9012FE'), ('安全工具', '#F56C6C'),
+    ]:
+        get_or_create_type_config('service_type', name, color)
 
     # Disk Interface Types
-    disk_interfaces = [
-        TypeConfig(category='disk_interface', name='NVMe PCIe 3.0'),
-        TypeConfig(category='disk_interface', name='NVMe PCIe 4.0'),
-        TypeConfig(category='disk_interface', name='SATA'),
-        TypeConfig(category='disk_interface', name='USB'),
-        TypeConfig(category='disk_interface', name='RDM'),
-        TypeConfig(category='disk_interface', name='控制器直通'),
-    ]
-    db.session.add_all(disk_interfaces)
+    for name in ['NVMe PCIe 3.0', 'NVMe PCIe 4.0', 'SATA', 'USB', 'RDM', '控制器直通']:
+        get_or_create_type_config('disk_interface', name)
 
     # Disk File System Types
-    disk_file_systems = [
-        TypeConfig(category='disk_file_system', name='ext4'),
-        TypeConfig(category='disk_file_system', name='ZFS'),
-        TypeConfig(category='disk_file_system', name='NTFS'),
-        TypeConfig(category='disk_file_system', name='Btrfs'),
-        TypeConfig(category='disk_file_system', name='XFS'),
-    ]
-    db.session.add_all(disk_file_systems)
+    for name in ['ext4', 'ZFS', 'NTFS', 'Btrfs', 'XFS']:
+        get_or_create_type_config('disk_file_system', name)
 
     # Disk Mount Method Types
-    disk_mount_methods = [
-        TypeConfig(category='disk_mount_method', name='本地路径挂载'),
-        TypeConfig(category='disk_mount_method', name='NFS共享'),
-        TypeConfig(category='disk_mount_method', name='CIFS/SMB共享'),
-        TypeConfig(category='disk_mount_method', name='iSCSI'),
-        TypeConfig(category='disk_mount_method', name='ZFS数据集'),
-    ]
-    db.session.add_all(disk_mount_methods)
+    for name in ['本地路径挂载', 'NFS共享', 'CIFS/SMB共享', 'iSCSI', 'ZFS数据集']:
+        get_or_create_type_config('disk_mount_method', name)
 
     db.session.commit()
 

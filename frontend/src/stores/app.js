@@ -590,12 +590,20 @@ export function createAppStore() {
 
   // ==================== Type Config CRUD ====================
   async function addTypeConfig(category, name, color) {
+    // 检查是否已存在同名配置
+    if (state.typeConfigs.some(t => t.category === category && t.name === name)) {
+      throw new Error('该配置项已存在')
+    }
     const res = await api.createTypeConfig({ category, name, color: color || '#409EFF' })
     state.typeConfigs.push(res)
     return res
   }
 
   async function updateTypeConfigById(id, data) {
+    // 检查是否与其他配置重名
+    if (data.name && state.typeConfigs.some(t => t.id !== id && t.category === data.category && t.name === data.name)) {
+      throw new Error('该配置项已存在')
+    }
     await api.updateTypeConfig(id, data)
     const idx = state.typeConfigs.findIndex(t => t.id === id)
     if (idx >= 0) Object.assign(state.typeConfigs[idx], data)

@@ -17,7 +17,7 @@
             v-for="item in osTypeList"
             :key="item.id"
             closable
-            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            :style="{ backgroundColor: item.color + '15', borderColor: item.color, color: item.color }"
             @click="openEditDialog(item, 'os_type')"
             @close="confirmDeleteType(item)"
           >
@@ -38,7 +38,7 @@
             v-for="item in protocolList"
             :key="item.id"
             closable
-            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            :style="{ backgroundColor: item.color + '15', borderColor: item.color, color: item.color }"
             @click="openEditDialog(item, 'protocol')"
             @close="confirmDeleteType(item)"
           >
@@ -59,7 +59,7 @@
             v-for="item in serviceTypeList"
             :key="item.id"
             closable
-            :style="{ backgroundColor: item.color, borderColor: item.color, color: '#fff' }"
+            :style="{ backgroundColor: item.color + '15', borderColor: item.color, color: item.color }"
             @click="openEditDialog(item, 'service_type')"
             @close="confirmDeleteType(item)"
           >
