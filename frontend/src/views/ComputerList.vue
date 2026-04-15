@@ -204,11 +204,20 @@
           <el-form-item label="容量 (GB)">
             <el-input-number v-model="hardwareEditForm.capacity" :min="1" />
           </el-form-item>
-          <el-form-item label="接口">
-            <el-input v-model="hardwareEditForm.interface" placeholder="如 NVMe PCIe 4.0" />
+          <el-form-item label="物理接口">
+            <el-select v-model="hardwareEditForm.interface" placeholder="选择物理接口" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskInterfaceOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
           </el-form-item>
           <el-form-item label="文件系统">
-            <el-input v-model="hardwareEditForm.fileSystem" placeholder="如 ext4" />
+            <el-select v-model="hardwareEditForm.fileSystem" placeholder="选择文件系统" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskFileSystemOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="挂载方式">
+            <el-select v-model="hardwareEditForm.mountMethod" placeholder="选择挂载方式" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskMountMethodOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
           </el-form-item>
           <el-form-item label="用途">
             <el-input v-model="hardwareEditForm.purpose" placeholder="如 数据存储" />
@@ -242,6 +251,16 @@ import { ElMessageBox } from 'element-plus'
 
 const store = useAppStore()
 const openDrawer = inject('openDrawer')
+
+const diskInterfaceOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_interface').map(t => t.name)
+)
+const diskFileSystemOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_file_system').map(t => t.name)
+)
+const diskMountMethodOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_mount_method').map(t => t.name)
+)
 
 const filterText = ref('')
 const showDialog = ref(false)
@@ -377,6 +396,7 @@ const openHardwareEdit = (type, hardware) => {
       capacity: hardware.capacity,
       interface: hardware.interface,
       fileSystem: hardware.fileSystem,
+      mountMethod: hardware.mountMethod,
       purpose: hardware.purpose,
       isBootDisk: hardware.isBootDisk,
       purchaseDate: hardware.purchaseDate,

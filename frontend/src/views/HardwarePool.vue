@@ -114,8 +114,9 @@
             <th>品牌</th>
             <th>型号</th>
             <th>容量</th>
-            <th>接口</th>
+            <th>物理接口</th>
             <th>文件系统</th>
+            <th>挂载方式</th>
             <th>用途</th>
             <th>备注</th>
             <th>状态</th>
@@ -127,8 +128,9 @@
             <td>{{ disk.brand }}</td>
             <td>{{ disk.model }}</td>
             <td><span class="tech-data">{{ disk.capacity }} GB</span></td>
-            <td>{{ disk.interface }}</td>
+            <td>{{ disk.interface || '-' }}</td>
             <td>{{ disk.fileSystem || '-' }}</td>
+            <td>{{ disk.mountMethod || '-' }}</td>
             <td>{{ disk.purpose || '-' }}</td>
             <td>{{ disk.remarks || '-' }}</td>
             <td>
@@ -173,22 +175,19 @@
           <el-form-item label="品牌"><el-input v-model="hardwareForm.disk.brand" placeholder="如 Samsung" /></el-form-item>
           <el-form-item label="型号"><el-input v-model="hardwareForm.disk.model" placeholder="如 PM983" /></el-form-item>
           <el-form-item label="容量(GB)"><el-input-number v-model="hardwareForm.disk.capacity" :min="1" :max="100000" /></el-form-item>
-          <el-form-item label="接口">
-            <el-select v-model="hardwareForm.disk.interface" placeholder="选择接口" style="width:100%">
-              <el-option label="NVMe" value="NVMe" />
-              <el-option label="SATA" value="SATA" />
-              <el-option label="USB" value="USB" />
-              <el-option label="RDM" value="RDM" />
-              <el-option label="控制器直通" value="控制器直通" />
+          <el-form-item label="物理接口">
+            <el-select v-model="hardwareForm.disk.interface" placeholder="选择物理接口" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskInterfaceOptions" :key="opt" :label="opt" :value="opt" />
             </el-select>
           </el-form-item>
           <el-form-item label="文件系统">
-            <el-select v-model="hardwareForm.disk.fileSystem" placeholder="选择文件系统" style="width:100%">
-              <el-option label="ext4" value="ext4" />
-              <el-option label="ZFS" value="ZFS" />
-              <el-option label="NTFS" value="NTFS" />
-              <el-option label="Btrfs" value="Btrfs" />
-              <el-option label="XFS" value="XFS" />
+            <el-select v-model="hardwareForm.disk.fileSystem" placeholder="选择文件系统" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskFileSystemOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="挂载方式">
+            <el-select v-model="hardwareForm.disk.mountMethod" placeholder="选择挂载方式" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskMountMethodOptions" :key="opt" :label="opt" :value="opt" />
             </el-select>
           </el-form-item>
           <el-form-item label="用途"><el-input v-model="hardwareForm.disk.purpose" placeholder="如 系统盘、数据存储" /></el-form-item>
@@ -212,6 +211,16 @@ import { useAppStore } from '../stores/app'
 import { ElMessage } from 'element-plus'
 
 const store = useAppStore()
+
+const diskInterfaceOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_interface').map(t => t.name)
+)
+const diskFileSystemOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_file_system').map(t => t.name)
+)
+const diskMountMethodOptions = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_mount_method').map(t => t.name)
+)
 
 const hardwareTab = ref('cpu')
 const showDialog = ref(false)
@@ -241,7 +250,7 @@ const saveHardware = async () => {
     } else if (hardwareTab.value === 'ram') {
       hardwareForm.value.ram = { brand: '', model: '', capacity: 32, type: 'DDR4' }
     } else {
-      hardwareForm.value.disk = { brand: '', model: '', capacity: 500, interface: 'NVMe', fileSystem: '', purpose: '', isBootDisk: false, remarks: '' }
+      hardwareForm.value.disk = { brand: '', model: '', capacity: 500, interface: '', fileSystem: '', mountMethod: '', purpose: '', isBootDisk: false, remarks: '' }
     }
     ElMessage.success('添加成功')
   } catch (e) {

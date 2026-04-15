@@ -103,8 +103,9 @@ class Disk(db.Model):
     brand = db.Column(db.String(50))
     model = db.Column(db.String(50))
     capacity_gb = db.Column(db.Integer)
-    interface = db.Column(db.String(20))
-    file_system = db.Column(db.String(20))
+    interface = db.Column(db.String(50))
+    file_system = db.Column(db.String(50))
+    mount_method = db.Column(db.String(50))
     purpose = db.Column(db.String(50))
     slot_info = db.Column(db.String(20))
     is_boot_disk = db.Column(db.Boolean, default=False)
@@ -120,6 +121,7 @@ class Disk(db.Model):
             'capacity_gb': self.capacity_gb,
             'interface': self.interface,
             'file_system': self.file_system,
+            'mount_method': self.mount_method,
             'purpose': self.purpose,
             'slot_info': self.slot_info,
             'is_boot_disk': self.is_boot_disk,

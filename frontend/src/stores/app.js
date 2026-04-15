@@ -105,6 +105,7 @@ export function createAppStore() {
         capacity: d.capacity_gb,
         interface: d.interface,
         fileSystem: d.file_system,
+        mountMethod: d.mount_method,
         purpose: d.purpose,
         isBootDisk: d.is_boot_disk,
         purchaseDate: d.purchase_date,
@@ -361,6 +362,7 @@ export function createAppStore() {
         capacity_gb: form.capacity,
         interface: form.interface,
         file_system: form.fileSystem,
+        mount_method: form.mountMethod,
         purpose: form.purpose,
         is_boot_disk: form.isBootDisk,
         computer_id: null
@@ -374,6 +376,7 @@ export function createAppStore() {
         capacity: res.capacity_gb,
         interface: res.interface,
         fileSystem: res.file_system,
+        mountMethod: res.mount_method,
         purpose: res.purpose,
         isBootDisk: res.is_boot_disk
       })
@@ -431,6 +434,7 @@ export function createAppStore() {
         capacity_gb: form.capacity,
         interface: form.interface,
         file_system: form.fileSystem,
+        mount_method: form.mountMethod,
         purpose: form.purpose,
         is_boot_disk: form.isBootDisk,
         purchase_date: form.purchaseDate,
@@ -446,6 +450,7 @@ export function createAppStore() {
           capacity: form.capacity,
           interface: form.interface,
           fileSystem: form.fileSystem,
+          mountMethod: form.mountMethod,
           purpose: form.purpose,
           isBootDisk: form.isBootDisk,
           purchaseDate: form.purchaseDate,
@@ -579,7 +584,7 @@ export function createAppStore() {
 
   // ==================== Type Config CRUD ====================
   async function addTypeConfig(category, name, color) {
-    const res = await api.createTypeConfig({ category, name, color })
+    const res = await api.createTypeConfig({ category, name, color: color || '#409EFF' })
     state.typeConfigs.push(res)
     return res
   }

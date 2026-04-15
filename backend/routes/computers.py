@@ -90,6 +90,7 @@ def create_disk_global():
         capacity_gb=data.get('capacity_gb'),
         interface=data.get('interface'),
         file_system=data.get('file_system'),
+        mount_method=data.get('mount_method'),
         purpose=data.get('purpose'),
         slot_info=data.get('slot_info'),
         is_boot_disk=data.get('is_boot_disk', False),
@@ -110,6 +111,7 @@ def update_disk(id):
     disk.capacity_gb = data.get('capacity_gb', disk.capacity_gb)
     disk.interface = data.get('interface', disk.interface)
     disk.file_system = data.get('file_system', disk.file_system)
+    disk.mount_method = data.get('mount_method', disk.mount_method)
     disk.purpose = data.get('purpose', disk.purpose)
     disk.slot_info = data.get('slot_info', disk.slot_info)
     disk.is_boot_disk = data.get('is_boot_disk', disk.is_boot_disk)
@@ -263,6 +265,7 @@ def create_disk(computer_id):
         capacity_gb=data.get('capacity_gb'),
         interface=data.get('interface'),
         file_system=data.get('file_system'),
+        mount_method=data.get('mount_method'),
         purpose=data.get('purpose'),
         slot_info=data.get('slot_info'),
         is_boot_disk=data.get('is_boot_disk', False),

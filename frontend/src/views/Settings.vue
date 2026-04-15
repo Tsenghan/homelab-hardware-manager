@@ -67,6 +67,66 @@
           </el-tag>
         </div>
       </div>
+
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">物理接口</span>
+          <el-button type="primary" size="small" @click="showAddDiskInterfaceDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in diskInterfaceList"
+            :key="item.id"
+            closable
+            @click="openEditDialog(item, 'disk_interface')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">文件系统</span>
+          <el-button type="primary" size="small" @click="showAddFileSystemDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in diskFileSystemList"
+            :key="item.id"
+            closable
+            @click="openEditDialog(item, 'disk_file_system')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-header">
+          <span class="settings-section-title">挂载方式</span>
+          <el-button type="primary" size="small" @click="showAddMountMethodDialog = true">
+            <el-icon><Plus /></el-icon> 添加
+          </el-button>
+        </div>
+        <div class="tag-list">
+          <el-tag
+            v-for="item in diskMountMethodList"
+            :key="item.id"
+            closable
+            @click="openEditDialog(item, 'disk_mount_method')"
+            @close="confirmDeleteType(item)"
+          >
+            {{ item.name }}
+          </el-tag>
+        </div>
+      </div>
     </div> <div class="import-export-section">
       <span class="section-label">导入导出</span>
       <div class="import-export-actions">
@@ -140,6 +200,42 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="showAddDiskInterfaceDialog" title="添加物理接口" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="名称" required>
+          <el-input v-model="newDiskInterface.name" placeholder="如 NVMe PCIe 4.0" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddDiskInterfaceDialog = false">取消</el-button>
+        <el-button type="primary" @click="addType('disk_interface')">添加</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="showAddFileSystemDialog" title="添加文件系统" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="名称" required>
+          <el-input v-model="newFileSystem.name" placeholder="如 ext4" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddFileSystemDialog = false">取消</el-button>
+        <el-button type="primary" @click="addType('disk_file_system')">添加</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="showAddMountMethodDialog" title="添加挂载方式" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="名称" required>
+          <el-input v-model="newMountMethod.name" placeholder="如 路径挂载" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddMountMethodDialog = false">取消</el-button>
+        <el-button type="primary" @click="addType('disk_mount_method')">添加</el-button>
+      </template>
+    </el-dialog>
+
   </div> </template>
 
 <script setup>
@@ -154,6 +250,9 @@ const fileInput = ref(null)
 const showAddOsDialog = ref(false)
 const showAddProtocolDialog = ref(false)
 const showAddServiceTypeDialog = ref(false)
+const showAddDiskInterfaceDialog = ref(false)
+const showAddFileSystemDialog = ref(false)
+const showAddMountMethodDialog = ref(false)
 const showEditDialog = ref(false)
 const editingItem = ref(null)
 const editForm = ref({ name: '', color: '#409EFF' })
@@ -161,6 +260,9 @@ const editForm = ref({ name: '', color: '#409EFF' })
 const newOsType = ref({ name: '', color: '#409EFF' })
 const newProtocol = ref({ name: '', color: '#409EFF' })
 const newServiceType = ref({ name: '', color: '#409EFF' })
+const newDiskInterface = ref({ name: '' })
+const newFileSystem = ref({ name: '' })
+const newMountMethod = ref({ name: '' })
 
 const triggerImport = () => {
   fileInput.value.click()
@@ -195,12 +297,32 @@ const serviceTypeList = computed(() =>
   store.state.typeConfigs.filter(t => t.category === 'service_type')
 )
 
+const diskInterfaceList = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_interface')
+)
+
+const diskFileSystemList = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_file_system')
+)
+
+const diskMountMethodList = computed(() =>
+  store.state.typeConfigs.filter(t => t.category === 'disk_mount_method')
+)
+
 const addType = async (category) => {
   let form
   if (category === 'os_type') {
     form = newOsType.value
   } else if (category === 'protocol') {
     form = newProtocol.value
+  } else if (category === 'service_type') {
+    form = newServiceType.value
+  } else if (category === 'disk_interface') {
+    form = newDiskInterface.value
+  } else if (category === 'disk_file_system') {
+    form = newFileSystem.value
+  } else if (category === 'disk_mount_method') {
+    form = newMountMethod.value
   } else {
     form = newServiceType.value
   }
@@ -213,13 +335,21 @@ const addType = async (category) => {
   try {
     await store.addTypeConfig(category, form.name.trim(), form.color)
     form.name = ''
-    form.color = '#409EFF'
     if (category === 'os_type') {
+      form.color = '#409EFF'
       showAddOsDialog.value = false
     } else if (category === 'protocol') {
+      form.color = '#409EFF'
       showAddProtocolDialog.value = false
-    } else {
+    } else if (category === 'service_type') {
+      form.color = '#409EFF'
       showAddServiceTypeDialog.value = false
+    } else if (category === 'disk_interface') {
+      showAddDiskInterfaceDialog.value = false
+    } else if (category === 'disk_file_system') {
+      showAddFileSystemDialog.value = false
+    } else if (category === 'disk_mount_method') {
+      showAddMountMethodDialog.value = false
     }
     ElMessage.success('添加成功')
   } catch (e) {
