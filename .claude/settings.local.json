@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)",
+      "Bash(npm run *)",
+      "Bash(git clean *)",
+      "Bash(git pull *)",
+      "Bash(git commit *)",
+      "Bash(curl -k -s \"https://status.setup.findhan.top:8880/api/monitors\" -H \"Authorization: Bearer uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\")",
+      "Bash(curl -k -s \"https://status.setup.findhan.top:8880/api/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\")",
+      "Bash(curl -k -s -i \"https://status.setup.findhan.top:8880/api/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\")",
+      "Bash(curl -k -s \"https://status.setup.findhan.top:8880/api/status-page/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\" -H \"Accept: application/json\")",
+      "Bash(curl -k -s --connect-timeout 5 -m 10 -o /dev/null -w \"%{http_code} %{content_type}\" \"https://status.setup.findhan.top:8880/api/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\")",
+      "Bash(curl -k -s \"http://192.168.2.244:3001/api/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\")",
+      "Bash(curl -k -v \"http://192.168.2.244:3001/api/monitors\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\" -H \"Accept: application/json\")",
+      "Bash(curl -k -s \"http://192.168.2.244:3001/api/heartbeat?monitorID=1\" -H \"Uptime-Kuma-Api-Key: uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z\" -H \"Accept: application/json\")",
+      "Bash(curl -k -s \"http://192.168.2.244:3001/debug/backtrack\" -H \"Accept: application/json\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"from uptime_kuma_api import UptimeKumaApi; api = UptimeKumaApi\\('http://192.168.2.244:3001', 'uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z', timeout=10\\); m = api.get_monitors\\(\\); print\\(type\\(m\\), m[:2] if m else 'empty'\\); api.disconnect\\(\\)\")",
+      "Bash(python -c \"from uptime_kuma_api import UptimeKumaApi; api = UptimeKumaApi\\('http://192.168.2.244:3001', api_key='uk2_1M87LhTUUMIkk4vRSxtw5-1hl_XcnuiCHKP4af1Z', timeout=10\\); m = api.get_monitors\\(\\); print\\(type\\(m\\), str\\(m\\)[:200]\\); api.disconnect\\(\\)\")",
+      "Bash(git checkout *)",
+      "Bash(python -m py_compile main.py routes/type_configs.py routes/os_instances.py routes/services.py models.py init_db.py)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
