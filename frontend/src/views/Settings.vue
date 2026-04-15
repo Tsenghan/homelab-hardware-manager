@@ -140,6 +140,8 @@
       </div>
     </div>
 
+    <div class="version-footer">Homelab Manager v{{ version }}</div>
+
     <el-dialog v-model="showEditDialog" title="编辑配置" width="400px">
       <el-form label-width="80px">
         <el-form-item label="名称" required>
@@ -240,6 +242,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+
+// eslint-disable-next-line no-undef
+const version = __APP_VERSION__
 import { Plus, Upload, Download } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -550,5 +555,13 @@ const confirmDeleteType = (item) => {
   border-radius: 6px;
   font-size: 0.8125rem;
   padding: 8px 16px;
+}
+
+.version-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 24px;
+  padding: 8px;
 }
 </style>

@@ -4,7 +4,9 @@ import sys
 # Ensure backend/ is in path whether running via `python main.py` or gunicorn
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, send_from_directory
+APP_VERSION = os.environ.get("APP_VERSION", "1.0.0")
+
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from models import db
 
@@ -37,6 +39,10 @@ def create_app():
     app.register_blueprint(search_bp, url_prefix='/api')
     app.register_blueprint(ip_groups_bp, url_prefix='/api')
     app.register_blueprint(type_configs_bp, url_prefix='/api')
+
+    @app.route('/api/version')
+    def get_version():
+        return jsonify({'version': APP_VERSION})
 
     @app.route('/')
     def index():
