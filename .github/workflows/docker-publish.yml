@@ -27,7 +27,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Get version
-        run: echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+        run: echo "VERSION=$(node -p "require('./frontend/package.json').version")" >> $GITHUB_ENV
 
       - name: Extract metadata
         id: meta

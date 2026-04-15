@@ -4,7 +4,7 @@ import sys
 # Ensure backend/ is in path whether running via `python main.py` or gunicorn
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-APP_VERSION = os.environ.get("APP_VERSION", "1.0.0")
+APP_VERSION = os.environ.get("APP_VERSION", "1.0.1")
 
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
