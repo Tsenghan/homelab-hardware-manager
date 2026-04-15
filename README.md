@@ -8,6 +8,8 @@
 
 *专为个人及 HomeLab 场景设计的硬件与虚拟化资产管理系统*
 
+**[中文](README.md) | English**
+
 </div>
 
 ---
