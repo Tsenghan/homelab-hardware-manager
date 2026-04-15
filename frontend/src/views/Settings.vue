@@ -140,7 +140,9 @@
       </div>
     </div>
 
-    <div class="version-footer">Homelab Manager v{{ version }}</div>
+    <div class="version-footer">
+      <a href="https://github.com/Tsenghan/homelab-hardware-manager" target="_blank">Homelab Manager v{{ version }}</a>
+    </div>
 
     <el-dialog v-model="showEditDialog" title="编辑配置" width="400px">
       <el-form label-width="80px">
@@ -563,5 +565,14 @@ const confirmDeleteType = (item) => {
   color: #94a3b8;
   margin-top: 24px;
   padding: 8px;
+}
+
+.version-footer a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.version-footer a:hover {
+  color: #60a5fa;
 }
 </style>
