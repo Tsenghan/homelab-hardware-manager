@@ -1,6 +1,7 @@
 services:
   homelab:
     image: tsenghan/homelab-manager:latest
+    container_name: homelab-manager
     restart: unless-stopped
     ports:
       - "5000:5000"
