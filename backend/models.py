@@ -15,9 +15,9 @@ class Computer(db.Model):
     status = db.Column(db.String(20), default='online')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    cpus = db.relationship('CPU', backref='computer', lazy=True, cascade='all, delete-orphan')
-    rams = db.relationship('RAM', backref='computer', lazy=True, cascade='all, delete-orphan')
-    disks = db.relationship('Disk', backref='computer', lazy=True, cascade='all, delete-orphan')
+    cpus = db.relationship('CPU', backref='computer', lazy=True)
+    rams = db.relationship('RAM', backref='computer', lazy=True)
+    disks = db.relationship('Disk', backref='computer', lazy=True)
     os_instances = db.relationship('OsInstance', backref='computer', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self, include_details=False):

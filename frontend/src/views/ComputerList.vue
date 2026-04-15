@@ -87,8 +87,15 @@
             :class="{ selected: form.cpuIds.includes(cpu.id), assigned: cpu.computerId && cpu.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('cpu', cpu.id, cpu.computerId)"
           >
-            <div>{{ cpu.model }}</div>
-            <div style="font-size:12px;color:#909399">{{ cpu.cores }}核</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div>{{ cpu.model }}</div>
+                <div style="font-size:12px;color:#909399">{{ cpu.cores }}核 @ {{ cpu.clockSpeed || '-' }}GHz</div>
+              </div>
+              <el-button size="small" text @click.stop="openHardwareEdit('cpu', cpu)">
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
             <el-tag v-if="cpu.computerId && cpu.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
             <el-tag v-else-if="cpu.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
             <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
@@ -103,8 +110,15 @@
             :class="{ selected: form.ramIds.includes(ram.id), assigned: ram.computerId && ram.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('ram', ram.id, ram.computerId)"
           >
-            <div>{{ ram.brand }} {{ ram.model }}</div>
-            <div style="font-size:12px;color:#909399">{{ ram.capacity }}GB {{ ram.type }}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div>{{ ram.brand }} {{ ram.model }}</div>
+                <div style="font-size:12px;color:#909399">{{ ram.capacity }}GB {{ ram.type }}</div>
+              </div>
+              <el-button size="small" text @click.stop="openHardwareEdit('ram', ram)">
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
             <el-tag v-if="ram.computerId && ram.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
             <el-tag v-else-if="ram.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
             <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
@@ -119,8 +133,15 @@
             :class="{ selected: form.diskIds.includes(disk.id), assigned: disk.computerId && disk.computerId !== editingComputer?.id }"
             @click="toggleHardwareSelection('disk', disk.id, disk.computerId)"
           >
-            <div>{{ disk.brand }} {{ disk.model }}</div>
-            <div style="font-size:12px;color:#909399">{{ disk.capacity }}GB {{ disk.interface }}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div>{{ disk.brand }} {{ disk.model }}</div>
+                <div style="font-size:12px;color:#909399">{{ disk.capacity }}GB {{ disk.interface }} {{ disk.isBootDisk ? '(启动盘)' : '' }}</div>
+              </div>
+              <el-button size="small" text @click.stop="openHardwareEdit('disk', disk)">
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
             <el-tag v-if="disk.computerId && disk.computerId === editingComputer?.id" size="small" type="warning" style="margin-top:4px">已占用</el-tag>
             <el-tag v-else-if="disk.computerId" size="small" type="info" style="margin-top:4px">已分配</el-tag>
             <el-tag v-else size="small" type="success" style="margin-top:4px">空闲</el-tag>
@@ -132,6 +153,82 @@
         <el-button type="primary" @click="saveComputer">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- CPU Edit Dialog -->
+    <el-dialog v-model="showHardwareEditDialog" :title="editingHardware.type === 'cpu' ? '编辑 CPU' : editingHardware.type === 'ram' ? '编辑 内存' : '编辑 硬盘'" width="500px">
+      <el-form label-width="100px">
+        <template v-if="editingHardware.type === 'cpu'">
+          <el-form-item label="型号">
+            <el-input v-model="hardwareEditForm.model" placeholder="如 Intel i9-13900K" />
+          </el-form-item>
+          <el-form-item label="核心数">
+            <el-input-number v-model="hardwareEditForm.cores" :min="1" />
+          </el-form-item>
+          <el-form-item label="频率 (GHz)">
+            <el-input-number v-model="hardwareEditForm.clockSpeed" :min="0" :precision="2" />
+          </el-form-item>
+          <el-form-item label="购买日期">
+            <el-input v-model="hardwareEditForm.purchaseDate" placeholder="如 2024-01" />
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input v-model="hardwareEditForm.remarks" type="textarea" rows="2" />
+          </el-form-item>
+        </template>
+        <template v-else-if="editingHardware.type === 'ram'">
+          <el-form-item label="品牌">
+            <el-input v-model="hardwareEditForm.brand" placeholder="如 Kingston" />
+          </el-form-item>
+          <el-form-item label="型号">
+            <el-input v-model="hardwareEditForm.model" placeholder="如 DDR4-3200" />
+          </el-form-item>
+          <el-form-item label="容量 (GB)">
+            <el-input-number v-model="hardwareEditForm.capacity" :min="1" />
+          </el-form-item>
+          <el-form-item label="类型">
+            <el-input v-model="hardwareEditForm.type" placeholder="如 DDR4" />
+          </el-form-item>
+          <el-form-item label="购买日期">
+            <el-input v-model="hardwareEditForm.purchaseDate" placeholder="如 2024-01" />
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input v-model="hardwareEditForm.remarks" type="textarea" rows="2" />
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="品牌">
+            <el-input v-model="hardwareEditForm.brand" placeholder="如 Samsung" />
+          </el-form-item>
+          <el-form-item label="型号">
+            <el-input v-model="hardwareEditForm.model" placeholder="如 980 PRO" />
+          </el-form-item>
+          <el-form-item label="容量 (GB)">
+            <el-input-number v-model="hardwareEditForm.capacity" :min="1" />
+          </el-form-item>
+          <el-form-item label="接口">
+            <el-input v-model="hardwareEditForm.interface" placeholder="如 NVMe PCIe 4.0" />
+          </el-form-item>
+          <el-form-item label="文件系统">
+            <el-input v-model="hardwareEditForm.fileSystem" placeholder="如 ext4" />
+          </el-form-item>
+          <el-form-item label="用途">
+            <el-input v-model="hardwareEditForm.purpose" placeholder="如 数据存储" />
+          </el-form-item>
+          <el-form-item label="启动盘">
+            <el-switch v-model="hardwareEditForm.isBootDisk" />
+          </el-form-item>
+          <el-form-item label="购买日期">
+            <el-input v-model="hardwareEditForm.purchaseDate" placeholder="如 2024-01" />
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input v-model="hardwareEditForm.remarks" type="textarea" rows="2" />
+          </el-form-item>
+        </template>
+      </el-form>
+      <template #footer>
+        <el-button @click="showHardwareEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveHardwareEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -139,8 +236,9 @@
 import { ref, computed, inject } from 'vue'
 import { Plus, Search, Edit, Delete } from '@element-plus/icons-vue'
 import { Computer } from '@icon-park/vue-next'
+import { ElMessage } from 'element-plus'
 import { useAppStore } from '../stores/app'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 
 const store = useAppStore()
 const openDrawer = inject('openDrawer')
@@ -148,6 +246,11 @@ const openDrawer = inject('openDrawer')
 const filterText = ref('')
 const showDialog = ref(false)
 const editingComputer = ref(null)
+
+// Hardware edit dialog
+const showHardwareEditDialog = ref(false)
+const editingHardware = ref({ type: '', data: null })
+const hardwareEditForm = ref({})
 
 const form = ref({
   name: '',
@@ -245,6 +348,52 @@ const confirmDelete = (computer) => {
       ElMessage.error('删除失败')
     }
   }).catch(() => {})
+}
+
+// Hardware edit
+const openHardwareEdit = (type, hardware) => {
+  editingHardware.value = { type, data: hardware }
+  if (type === 'cpu') {
+    hardwareEditForm.value = {
+      model: hardware.model,
+      cores: hardware.cores,
+      clockSpeed: hardware.clockSpeed,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  } else if (type === 'ram') {
+    hardwareEditForm.value = {
+      brand: hardware.brand,
+      model: hardware.model,
+      capacity: hardware.capacity,
+      type: hardware.type,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  } else {
+    hardwareEditForm.value = {
+      brand: hardware.brand,
+      model: hardware.model,
+      capacity: hardware.capacity,
+      interface: hardware.interface,
+      fileSystem: hardware.fileSystem,
+      purpose: hardware.purpose,
+      isBootDisk: hardware.isBootDisk,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  }
+  showHardwareEditDialog.value = true
+}
+
+const saveHardwareEdit = async () => {
+  try {
+    await store.updateHardware(editingHardware.value.type, editingHardware.value.data.id, hardwareEditForm.value)
+    showHardwareEditDialog.value = false
+    ElMessage.success('保存成功')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
 }
 
 const resetForm = () => {

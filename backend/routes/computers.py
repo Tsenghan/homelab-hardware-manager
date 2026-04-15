@@ -162,6 +162,18 @@ def update_computer(id):
 @computers_bp.route('/computers/<int:id>', methods=['DELETE'])
 def delete_computer(id):
     computer = Computer.query.get_or_404(id)
+    # 将硬件和OS实例的 computer_id 置空，而非删除
+    for cpu in computer.cpus:
+        cpu.computer_id = None
+    for ram in computer.rams:
+        ram.computer_id = None
+    for disk in computer.disks:
+        disk.computer_id = None
+    # OS实例也需要解绑，但级联删除服务
+    for os in computer.os_instances:
+        for svc in os.services:
+            db.session.delete(svc)
+        db.session.delete(os)
     db.session.delete(computer)
     db.session.commit()
     return '', 204

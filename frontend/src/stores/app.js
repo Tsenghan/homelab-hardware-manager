@@ -380,6 +380,81 @@ export function createAppStore() {
     }
   }
 
+  // ==================== Hardware Update ====================
+  async function updateHardware(type, id, form) {
+    if (type === 'cpu') {
+      const payload = {
+        model: form.model,
+        cores: form.cores,
+        clock_speed: form.clockSpeed,
+        purchase_date: form.purchaseDate,
+        remarks: form.remarks
+      }
+      await api.updateCpu(id, payload)
+      const idx = state.allHardware.cpus.findIndex(c => c.id === id)
+      if (idx >= 0) {
+        state.allHardware.cpus[idx] = {
+          ...state.allHardware.cpus[idx],
+          model: form.model,
+          cores: form.cores,
+          clockSpeed: form.clockSpeed,
+          purchaseDate: form.purchaseDate,
+          remarks: form.remarks
+        }
+      }
+    } else if (type === 'ram') {
+      const payload = {
+        brand: form.brand,
+        model: form.model,
+        capacity_gb: form.capacity,
+        ram_type: form.type,
+        purchase_date: form.purchaseDate,
+        remarks: form.remarks
+      }
+      await api.updateRam(id, payload)
+      const idx = state.allHardware.rams.findIndex(r => r.id === id)
+      if (idx >= 0) {
+        state.allHardware.rams[idx] = {
+          ...state.allHardware.rams[idx],
+          brand: form.brand,
+          model: form.model,
+          capacity: form.capacity,
+          type: form.type,
+          purchaseDate: form.purchaseDate,
+          remarks: form.remarks
+        }
+      }
+    } else {
+      const payload = {
+        brand: form.brand,
+        model: form.model,
+        capacity_gb: form.capacity,
+        interface: form.interface,
+        file_system: form.fileSystem,
+        purpose: form.purpose,
+        is_boot_disk: form.isBootDisk,
+        purchase_date: form.purchaseDate,
+        remarks: form.remarks
+      }
+      await api.updateDisk(id, payload)
+      const idx = state.allHardware.disks.findIndex(d => d.id === id)
+      if (idx >= 0) {
+        state.allHardware.disks[idx] = {
+          ...state.allHardware.disks[idx],
+          brand: form.brand,
+          model: form.model,
+          capacity: form.capacity,
+          interface: form.interface,
+          fileSystem: form.fileSystem,
+          purpose: form.purpose,
+          isBootDisk: form.isBootDisk,
+          purchaseDate: form.purchaseDate,
+          remarks: form.remarks
+        }
+      }
+    }
+  }
+
   async function deleteHardware(type, id) {
     if (type === 'cpu') {
       await api.deleteCpu(id)
@@ -802,6 +877,7 @@ export function createAppStore() {
     saveComputer,
     deleteComputer: deleteComputerById,
     saveHardware,
+    updateHardware,
     deleteHardware,
     saveOsInstance,
     updateOsInstance: updateOsInstanceById,
