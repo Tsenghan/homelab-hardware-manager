@@ -24,11 +24,11 @@ export function createAppStore() {
   )
 
   const totalRam = computed(() =>
-    state.allHardware.rams.reduce((sum, r) => sum + (r.capacity || 0), 0)
+    state.allHardware.rams.reduce((sum, r) => sum + (r.capacity ?? 0), 0)
   )
 
   const totalDisk = computed(() =>
-    state.allHardware.disks.reduce((sum, d) => sum + (d.capacity || 0), 0)
+    state.allHardware.disks.reduce((sum, d) => sum + (d.capacity ?? 0), 0)
   )
 
   const totalVms = computed(() =>
@@ -133,16 +133,18 @@ export function createAppStore() {
       })
       state.allOsInstances = osList
 
-      // Load services for all os instances
+      // Load services for all os instances in parallel
+      const svcResults = await Promise.allSettled(
+        osList.map(os => api.getServices(os.id).then(sres => ({ osId: os.id, services: sres })))
+      )
       const svcList = []
-      for (const os of osList) {
-        try {
-          const sres = await api.getServices(os.id)
-          svcList.push(...sres.map(s => ({ ...s, osInstanceId: os.id })))
-        } catch (e) {
-          console.error(`Failed to load services for OS ${os.id}:`, e)
+      svcResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          svcList.push(...result.value.services.map(s => ({ ...s, osInstanceId: result.value.osId })))
+        } else {
+          console.error('Failed to load services:', result.reason)
         }
-      }
+      })
       state.services = svcList
 
     } catch (e) {
@@ -536,13 +538,17 @@ export function createAppStore() {
   }
 
   async function deleteOsInstanceById(id) {
-    await api.deleteOsInstance(id)
-    state.allOsInstances = state.allOsInstances.filter(os => os.id !== id)
-    // Reload the computer to update its os_instances
+    // Find the os instance to get computerId before deleting
     const os = state.allOsInstances.find(o => o.id === id)
-    if (os) {
-      const fullRes = await api.getComputer(os.computerId)
-      const idx = state.computers.findIndex(c => c.id === os.computerId)
+    const computerId = os?.computerId
+
+    await api.deleteOsInstance(id)
+    state.allOsInstances = state.allOsInstances.filter(o => o.id !== id)
+
+    // Reload the computer to update its os_instances
+    if (computerId) {
+      const fullRes = await api.getComputer(computerId)
+      const idx = state.computers.findIndex(c => c.id === computerId)
       if (idx >= 0) state.computers[idx] = fullRes
     }
   }

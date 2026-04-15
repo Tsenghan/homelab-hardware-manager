@@ -254,6 +254,10 @@ const handleRowClick = (row) => {
 }
 
 const openServiceUrl = (s) => {
+  if (!s?.protocol || !s?.ip_address || s?.port == null) {
+    ElMessage.warning('服务地址信息不完整')
+    return
+  }
   window.open(`${s.protocol}://${s.ip_address}:${s.port}`, '_blank')
 }
 

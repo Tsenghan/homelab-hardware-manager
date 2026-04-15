@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { Computer, Cpu, MemoryOne, HardDisk, ComputerOne, System } from '@icon-park/vue-next'
 import { useAppStore } from '../stores/app'
@@ -152,6 +152,9 @@ const handleKeydown = (e) => {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('keydown', handleKeydown)
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown)
+  })
 }
 </script>
 

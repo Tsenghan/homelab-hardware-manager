@@ -196,14 +196,28 @@ const form = ref({
   endIp: ''
 })
 
-const ipToNum = (ip) => {
+const isValidIp = (ip) => {
+  if (!ip || typeof ip !== 'string') return false
   const parts = ip.split('.')
-  return parseInt(parts[3])
+  if (parts.length !== 4) return false
+  return parts.every(p => {
+    const num = parseInt(p, 10)
+    return !isNaN(num) && num >= 0 && num <= 255
+  })
+}
+
+const ipToNum = (ip) => {
+  if (!isValidIp(ip)) return NaN
+  const parts = ip.split('.')
+  return parseInt(parts[3], 10)
 }
 
 const ipInRange = (ip, start, end) => {
   const ipNum = ipToNum(ip)
-  return ipNum >= ipToNum(start) && ipNum <= ipToNum(end)
+  const startNum = ipToNum(start)
+  const endNum = ipToNum(end)
+  if (isNaN(ipNum) || isNaN(startNum) || isNaN(endNum)) return false
+  return ipNum >= startNum && ipNum <= endNum
 }
 
 const ipGroups = computed(() => {
@@ -231,6 +245,16 @@ const ipGroups = computed(() => {
     const ips = []
     const startNum = ipToNum(group.startIp)
     const endNum = ipToNum(group.endIp)
+
+    // Skip invalid IP ranges (including infinite loop prevention when start > end)
+    if (isNaN(startNum) || isNaN(endNum) || startNum > endNum) {
+      return {
+        ...group,
+        ips: [],
+        usedCount: 0,
+        totalCount: 0
+      }
+    }
 
     // 提前计算 IP 前缀，避免循环内正则
     const baseIpStr = group.startIp.substring(0, group.startIp.lastIndexOf('.') + 1)
