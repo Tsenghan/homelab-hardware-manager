@@ -60,6 +60,9 @@
               <el-tag v-else size="small" type="info">闲置</el-tag>
             </td>
             <td>
+              <el-button size="small" :disabled="!!cpu.computerId" @click="openHardwareEdit('cpu', cpu)">
+                编辑
+              </el-button>
               <el-button size="small" type="danger" :disabled="!!cpu.computerId" @click="deleteHardware('cpu', cpu.id)">
                 删除
               </el-button>
@@ -96,6 +99,9 @@
               <el-tag v-else size="small" type="info">闲置</el-tag>
             </td>
             <td>
+              <el-button size="small" :disabled="!!ram.computerId" @click="openHardwareEdit('ram', ram)">
+                编辑
+              </el-button>
               <el-button size="small" type="danger" :disabled="!!ram.computerId" @click="deleteHardware('ram', ram.id)">
                 删除
               </el-button>
@@ -140,6 +146,9 @@
               <el-tag v-else size="small" type="info">闲置</el-tag>
             </td>
             <td>
+              <el-button size="small" :disabled="!!disk.computerId" @click="openHardwareEdit('disk', disk)">
+                编辑
+              </el-button>
               <el-button size="small" type="danger" :disabled="!!disk.computerId" @click="deleteHardware('disk', disk.id)">
                 删除
               </el-button>
@@ -200,6 +209,55 @@
         <el-button type="primary" @click="saveHardware">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- Hardware Edit Dialog -->
+    <el-dialog v-model="showHardwareEditDialog" :title="editingHardware.type === 'cpu' ? '编辑 CPU' : editingHardware.type === 'ram' ? '编辑 内存' : '编辑 硬盘'" width="500px">
+      <el-form label-width="100px">
+        <template v-if="editingHardware.type === 'cpu'">
+          <el-form-item label="型号"><el-input v-model="hardwareEditForm.model" /></el-form-item>
+          <el-form-item label="核心数"><el-input-number v-model="hardwareEditForm.cores" :min="1" /></el-form-item>
+          <el-form-item label="主频 (GHz)"><el-input-number v-model="hardwareEditForm.clockSpeed" :min="0" :precision="2" /></el-form-item>
+          <el-form-item label="购买日期"><el-date-picker v-model="hardwareEditForm.purchaseDate" type="date" style="width:100%" /></el-form-item>
+          <el-form-item label="备注"><el-input v-model="hardwareEditForm.remarks" /></el-form-item>
+        </template>
+        <template v-else-if="editingHardware.type === 'ram'">
+          <el-form-item label="品牌"><el-input v-model="hardwareEditForm.brand" /></el-form-item>
+          <el-form-item label="型号"><el-input v-model="hardwareEditForm.model" /></el-form-item>
+          <el-form-item label="容量 (GB)"><el-input-number v-model="hardwareEditForm.capacity" :min="1" /></el-form-item>
+          <el-form-item label="类型"><el-input v-model="hardwareEditForm.type" /></el-form-item>
+          <el-form-item label="购买日期"><el-date-picker v-model="hardwareEditForm.purchaseDate" type="date" style="width:100%" /></el-form-item>
+          <el-form-item label="备注"><el-input v-model="hardwareEditForm.remarks" /></el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="品牌"><el-input v-model="hardwareEditForm.brand" /></el-form-item>
+          <el-form-item label="型号"><el-input v-model="hardwareEditForm.model" /></el-form-item>
+          <el-form-item label="容量 (GB)"><el-input-number v-model="hardwareEditForm.capacity" :min="1" /></el-form-item>
+          <el-form-item label="物理接口">
+            <el-select v-model="hardwareEditForm.interface" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskInterfaceOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="文件系统">
+            <el-select v-model="hardwareEditForm.fileSystem" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskFileSystemOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="挂载方式">
+            <el-select v-model="hardwareEditForm.mountMethod" style="width:100%" allow-create filterable>
+              <el-option v-for="opt in diskMountMethodOptions" :key="opt" :label="opt" :value="opt" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="用途"><el-input v-model="hardwareEditForm.purpose" /></el-form-item>
+          <el-form-item label="启动盘"><el-switch v-model="hardwareEditForm.isBootDisk" /></el-form-item>
+          <el-form-item label="购买日期"><el-date-picker v-model="hardwareEditForm.purchaseDate" type="date" style="width:100%" /></el-form-item>
+          <el-form-item label="备注"><el-input v-model="hardwareEditForm.remarks" /></el-form-item>
+        </template>
+      </el-form>
+      <template #footer>
+        <el-button @click="showHardwareEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveHardwareEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -224,6 +282,9 @@ const diskMountMethodOptions = computed(() =>
 
 const hardwareTab = ref('cpu')
 const showDialog = ref(false)
+const showHardwareEditDialog = ref(false)
+const editingHardware = ref({ type: '', data: null })
+const hardwareEditForm = ref({})
 
 const getComputerName = (computerId) => {
   const computer = store.state.computers.find(c => c.id === computerId)
@@ -255,6 +316,52 @@ const saveHardware = async () => {
     ElMessage.success('添加成功')
   } catch (e) {
     ElMessage.error('添加失败')
+  }
+}
+
+const openHardwareEdit = (type, hardware) => {
+  editingHardware.value = { type, data: hardware }
+  if (type === 'cpu') {
+    hardwareEditForm.value = {
+      model: hardware.model,
+      cores: hardware.cores,
+      clockSpeed: hardware.clockSpeed,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  } else if (type === 'ram') {
+    hardwareEditForm.value = {
+      brand: hardware.brand,
+      model: hardware.model,
+      capacity: hardware.capacity,
+      type: hardware.type,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  } else {
+    hardwareEditForm.value = {
+      brand: hardware.brand,
+      model: hardware.model,
+      capacity: hardware.capacity,
+      interface: hardware.interface,
+      fileSystem: hardware.fileSystem,
+      mountMethod: hardware.mountMethod,
+      purpose: hardware.purpose,
+      isBootDisk: hardware.isBootDisk,
+      purchaseDate: hardware.purchaseDate,
+      remarks: hardware.remarks
+    }
+  }
+  showHardwareEditDialog.value = true
+}
+
+const saveHardwareEdit = async () => {
+  try {
+    await store.updateHardware(editingHardware.value.type, editingHardware.value.data.id, hardwareEditForm.value)
+    showHardwareEditDialog.value = false
+    ElMessage.success('保存成功')
+  } catch (e) {
+    ElMessage.error('保存失败')
   }
 }
 

@@ -78,6 +78,38 @@ def load_example_data():
         TypeConfig(category='service_type', name='安全工具', color='#F56C6C'),
     ]
     db.session.add_all(service_types)
+
+    # Disk Interface Types
+    disk_interfaces = [
+        TypeConfig(category='disk_interface', name='NVMe PCIe 3.0'),
+        TypeConfig(category='disk_interface', name='NVMe PCIe 4.0'),
+        TypeConfig(category='disk_interface', name='SATA'),
+        TypeConfig(category='disk_interface', name='USB'),
+        TypeConfig(category='disk_interface', name='RDM'),
+        TypeConfig(category='disk_interface', name='控制器直通'),
+    ]
+    db.session.add_all(disk_interfaces)
+
+    # Disk File System Types
+    disk_file_systems = [
+        TypeConfig(category='disk_file_system', name='ext4'),
+        TypeConfig(category='disk_file_system', name='ZFS'),
+        TypeConfig(category='disk_file_system', name='NTFS'),
+        TypeConfig(category='disk_file_system', name='Btrfs'),
+        TypeConfig(category='disk_file_system', name='XFS'),
+    ]
+    db.session.add_all(disk_file_systems)
+
+    # Disk Mount Method Types
+    disk_mount_methods = [
+        TypeConfig(category='disk_mount_method', name='本地路径挂载'),
+        TypeConfig(category='disk_mount_method', name='NFS共享'),
+        TypeConfig(category='disk_mount_method', name='CIFS/SMB共享'),
+        TypeConfig(category='disk_mount_method', name='iSCSI'),
+        TypeConfig(category='disk_mount_method', name='ZFS数据集'),
+    ]
+    db.session.add_all(disk_mount_methods)
+
     db.session.commit()
 
     # ==================== IP Groups ====================
@@ -112,9 +144,9 @@ def load_example_data():
 
     # Disks for PVE1
     disks_pve1 = [
-        Disk(computer_id=pve1.id, brand='Samsung', model='PM983', capacity_gb=960, interface='NVMe', file_system='ext4', purpose='PVE系统盘', is_boot_disk=True, purchase_date='2024-01-15'),
-        Disk(computer_id=pve1.id, brand='Samsung', model='PM983', capacity_gb=1920, interface='NVMe', file_system='ZFS', purpose='数据存储池', is_boot_disk=False, purchase_date='2024-01-15', remarks='1.92TB NVMe 用于ZFS存储池'),
-        Disk(computer_id=pve1.id, brand='WD', model='WD40EFPX', capacity_gb=4000, interface='SATA', file_system='ext4', purpose='备份盘', is_boot_disk=False, purchase_date='2023-06-01', remarks='4TB 红盘，用于备份'),
+        Disk(computer_id=pve1.id, brand='Samsung', model='PM983', capacity_gb=960, interface='NVMe PCIe 4.0', file_system='ext4', mount_method='本地路径挂载', purpose='PVE系统盘', is_boot_disk=True, purchase_date='2024-01-15'),
+        Disk(computer_id=pve1.id, brand='Samsung', model='PM983', capacity_gb=1920, interface='NVMe PCIe 4.0', file_system='ZFS', mount_method='ZFS数据集', purpose='数据存储池', is_boot_disk=False, purchase_date='2024-01-15', remarks='1.92TB NVMe 用于ZFS存储池'),
+        Disk(computer_id=pve1.id, brand='WD', model='WD40EFPX', capacity_gb=4000, interface='SATA', file_system='ext4', mount_method='本地路径挂载', purpose='备份盘', is_boot_disk=False, purchase_date='2023-06-01', remarks='4TB 红盘，用于备份'),
     ]
     db.session.add_all(disks_pve1)
 
@@ -137,8 +169,8 @@ def load_example_data():
     db.session.add_all(rams_pve2)
 
     disks_pve2 = [
-        Disk(computer_id=pve2.id, brand='Samsung', model='980 PRO', capacity_gb=500, interface='NVMe', file_system='ext4', purpose='系统盘', is_boot_disk=True, purchase_date='2024-03-20'),
-        Disk(computer_id=pve2.id, brand='Seagate', model='IronWolf 8T', capacity_gb=8000, interface='SATA', file_system='ZFS', purpose='NAS存储', is_boot_disk=False, purchase_date='2024-03-25', remarks='8TB NAS专用盘'),
+        Disk(computer_id=pve2.id, brand='Samsung', model='980 PRO', capacity_gb=500, interface='NVMe PCIe 4.0', file_system='ext4', mount_method='本地路径挂载', purpose='系统盘', is_boot_disk=True, purchase_date='2024-03-20'),
+        Disk(computer_id=pve2.id, brand='Seagate', model='IronWolf 8T', capacity_gb=8000, interface='SATA', file_system='ZFS', mount_method='ZFS数据集', purpose='NAS存储', is_boot_disk=False, purchase_date='2024-03-25', remarks='8TB NAS专用盘'),
     ]
     db.session.add_all(disks_pve2)
 

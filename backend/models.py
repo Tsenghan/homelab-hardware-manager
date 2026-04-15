@@ -163,7 +163,7 @@ class OsInstance(db.Model):
         }
         if include_details:
             data['services'] = [s.to_dict() for s in self.services]
-            data['children'] = [c.to_dict(include_details=True) for c in self.children]
+            data['children'] = [c.to_dict(include_details=False) for c in self.children]
         return data
 
 
